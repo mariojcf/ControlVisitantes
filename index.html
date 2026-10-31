@@ -26,12 +26,6 @@
             gap: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        header img {
-            height: 55px;
-            background-color: white;
-            padding: 5px;
-            border-radius: 4px;
-        }
         header h1 {
             margin: 0;
             font-size: 24px;
@@ -49,6 +43,20 @@
             border-bottom: 2px solid var(--umes-green);
             padding-bottom: 10px;
             margin-top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-indicator {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background-color: #ffc107;
+            color: #000;
+        }
+        .status-indicator.online {
+            background-color: #28a745;
+            color: white;
         }
         .form-grid {
             display: grid;
@@ -91,8 +99,12 @@
         button:hover {
             background-color: #033624;
         }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
         .btn-export {
-            background-color: #1d6f42; /* Verde Excel */
+            background-color: #1d6f42;
         }
         .btn-export:hover {
             background-color: #144c2d;
@@ -114,11 +126,14 @@
             padding: 15px;
             border-radius: 5px;
             border: 1px solid var(--umes-border);
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .filter-group {
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
         .table-responsive {
             overflow-x: auto;
@@ -144,20 +159,67 @@
         tr:hover {
             background-color: #f1f1f1;
         }
+
+        /* Custom Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-box {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal-box h3 {
+            margin-top: 0;
+            color: var(--umes-green);
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .btn-cancel {
+            background-color: #6c757d;
+        }
+        .btn-cancel:hover {
+            background-color: #5a6268;
+        }
     </style>
 </head>
 <body>
-
     <header>
-        <!-- Logo referenciado según la imagen original proporcionada -->
-        <img src="logo.png" alt="Logo UMES">
         <h1>Registro y Control de Visitantes</h1>
     </header>
-
     <div class="container">
-        <h2>Ingreso de Nueva Visita</h2>
+        <h2>
+            Ingreso de Nueva Visita
+        </h2>
         <form id="formVisitantes">
             <div class="form-grid">
+                <!-- Nuevo campo de Recepcionista -->
+                <div class="form-group">
+                    <label for="recepcionista">Recepcionista en turno</label>
+                    <select id="recepcionista" required>
+                        <option value="" disabled selected>Seleccione...</option>
+                        <option value="Recepcionista 1">Brenda</option>
+                        <option value="Recepcionista 2">Andrea</option>
+                        <option value="Recepcionista 3">Mario</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="fecha">Fecha</label>
                     <input type="date" id="fecha" required>
@@ -179,7 +241,7 @@
                     <input type="text" id="ubicacion" placeholder="Ej. Recepción / Contabilidad" required>
                 </div>
             </div>
-            <button type="submit">Guardar Registro</button>
+            <button type="submit" id="btnGuardar">Guardar Registro</button>
         </form>
 
         <div class="table-controls">
@@ -198,9 +260,10 @@
                         <th>Día</th>
                         <th>Hora</th>
                         <th>Fecha</th>
-                        <th>Nombres</th>
+                        <th>Visitante</th>
                         <th>Consulta</th>
                         <th>Ubicación</th>
+                        <th>Recepcionista</th>
                         <th>Acción</th>
                     </tr>
                 </thead>
@@ -211,9 +274,23 @@
         </div>
     </div>
 
+    <!-- Modal de confirmación para eliminar -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Eliminar Registro</h3>
+            <p>¿Estás seguro de que deseas eliminar este registro de visitante? Esta acción no se puede deshacer y se borrará para todos los recepcionistas.</p>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="btnCancelDelete">Cancelar</button>
+                <button type="button" class="btn-delete" id="btnConfirmDelete">Sí, Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script principal -->
     <script>
         // Inicializar almacenamiento local
-        let registros = JSON.parse(localStorage.getItem('umes_registros_visitas')) || [];
+        let registros = JSON.parse(localStorage.getItem('umes_registros_visitas_local')) || [];
+        let registroAEliminar = null;
         const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
         // Elementos del DOM
@@ -223,25 +300,34 @@
         const btnLimpiar = document.getElementById('btnLimpiar');
         const btnExportar = document.getElementById('btnExportar');
 
+        // Elementos del Modal
+        const deleteModal = document.getElementById('deleteModal');
+        const btnCancelDelete = document.getElementById('btnCancelDelete');
+        const btnConfirmDelete = document.getElementById('btnConfirmDelete');
+
         // Configurar el mes actual por defecto al cargar
         const fechaActual = new Date();
         const mesActualFormato = fechaActual.getFullYear() + '-' + String(fechaActual.getMonth() + 1).padStart(2, '0');
         filtroMes.value = mesActualFormato;
 
-        // Función para calcular el nombre del día
+        // Establecer fecha actual en el input del formulario para ahorrar tiempo
+        const diaActualFormato = fechaActual.getFullYear() + '-' + String(fechaActual.getMonth() + 1).padStart(2, '0') + '-' + String(fechaActual.getDate()).padStart(2, '0');
+        document.getElementById('fecha').value = diaActualFormato;
+
+        // Formatear hora actual (HH:MM)
+        const horaActual = String(fechaActual.getHours()).padStart(2, '0') + ':' + String(fechaActual.getMinutes()).padStart(2, '0');
+        document.getElementById('hora').value = horaActual;
+
         function obtenerNombreDia(fechaString) {
-            // Añadir T12:00:00 para evitar desajustes por zona horaria local
             const fecha = new Date(fechaString + 'T12:00:00');
             return diasSemana[fecha.getDay()];
         }
 
-        // Función para formatear fecha de YYYY-MM-DD a DD/MM/YYYY
         function formatearFechaVisual(fechaString) {
             const partes = fechaString.split('-');
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
 
-        // Renderizar la tabla en base al filtro
         function actualizarTabla() {
             cuerpoTabla.innerHTML = '';
             const filtro = filtroMes.value;
@@ -253,11 +339,18 @@
                 return fechaB - fechaA;
             });
 
-            registrosOrdenados.forEach((registro) => {
-                const mesRegistro = registro.fecha.substring(0, 7); // Obtener YYYY-MM
+            const registrosFiltrados = registrosOrdenados.filter((registro) => {
+                const mesRegistro = registro.fecha.substring(0, 7);
+                if (filtro && filtro !== mesRegistro) return false;
+                return true;
+            });
 
-                if (filtro && filtro !== mesRegistro) return; // Aplicar filtro de mes
+            if (registrosFiltrados.length === 0) {
+                cuerpoTabla.innerHTML = `<tr><td colspan="8" style="text-align: center;">No hay registros para el mes seleccionado</td></tr>`;
+                return;
+            }
 
+            registrosFiltrados.forEach((registro) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${registro.dia}</td>
@@ -266,20 +359,30 @@
                     <td>${registro.nombres}</td>
                     <td>${registro.consulta}</td>
                     <td>${registro.ubicacion}</td>
-                    <td><button class="btn-delete" onclick="eliminarRegistro('${registro.id}')">Eliminar</button></td>
+                    <td><strong>${registro.recepcionista || 'N/A'}</strong></td>
+                    <td><button class="btn-delete" data-id="${registro.id}">Eliminar</button></td>
                 `;
                 cuerpoTabla.appendChild(tr);
             });
+
+            // Asignar eventos de eliminar
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    if (id) confirmarEliminacion(id);
+                });
+            });
         }
 
-        // Evento para guardar un nuevo registro
+        // --- Guardar Datos ---
         form.addEventListener('submit', function(e) {
             e.preventDefault();
 
             const fechaInput = document.getElementById('fecha').value;
 
             const nuevoRegistro = {
-                id: Date.now().toString(), // Identificador único
+                id: Date.now().toString(),
+                recepcionista: document.getElementById('recepcionista').value,
                 dia: obtenerNombreDia(fechaInput),
                 fecha: fechaInput,
                 hora: document.getElementById('hora').value,
@@ -289,29 +392,46 @@
             };
 
             registros.push(nuevoRegistro);
-            localStorage.setItem('umes_registros_visitas', JSON.stringify(registros));
+            localStorage.setItem('umes_registros_visitas_local', JSON.stringify(registros));
 
-            form.reset();
+            // Reiniciar solo campos de texto, dejar fecha/hora/recepcionista
+            document.getElementById('nombres').value = '';
+            document.getElementById('consulta').value = '';
+            document.getElementById('ubicacion').value = '';
+
             actualizarTabla();
         });
 
-        // Función para eliminar un registro
-        window.eliminarRegistro = function(id) {
-            if(confirm('¿Deseas eliminar este registro de visitante?')) {
-                registros = registros.filter(r => r.id !== id);
-                localStorage.setItem('umes_registros_visitas', JSON.stringify(registros));
-                actualizarTabla();
-            }
+        // --- Sistema de Modal para Eliminar ---
+        function confirmarEliminacion(id) {
+            registroAEliminar = id;
+            deleteModal.style.display = 'flex';
         }
 
-        // Eventos de filtrado
+        btnCancelDelete.addEventListener('click', () => {
+            registroAEliminar = null;
+            deleteModal.style.display = 'none';
+        });
+
+        btnConfirmDelete.addEventListener('click', () => {
+            if (registroAEliminar) {
+                registros = registros.filter(r => r.id !== registroAEliminar);
+                localStorage.setItem('umes_registros_visitas_local', JSON.stringify(registros));
+                actualizarTabla();
+
+                registroAEliminar = null;
+                deleteModal.style.display = 'none';
+            }
+        });
+
+        // --- Eventos de filtrado ---
         filtroMes.addEventListener('change', actualizarTabla);
         btnLimpiar.addEventListener('click', () => {
             filtroMes.value = '';
             actualizarTabla();
         });
 
-        // Evento para exportar a Excel (CSV)
+        // --- Exportar a Excel (CSV) ---
         btnExportar.addEventListener('click', function() {
             const filtro = filtroMes.value;
             let datosExportar = registros;
@@ -321,30 +441,38 @@
             }
 
             if(datosExportar.length === 0) {
-                alert('No hay registros en el mes seleccionado para exportar.');
+                const originalText = btnExportar.textContent;
+                btnExportar.textContent = '⚠️ Sin datos';
+                btnExportar.style.backgroundColor = '#dc3545';
+                setTimeout(() => {
+                    btnExportar.textContent = originalText;
+                    btnExportar.style.backgroundColor = '';
+                }, 3000);
                 return;
             }
 
-            // Cabeceras del CSV
-            let csvContent = "Día,Hora,Fecha,Nombres,Consulta,Ubicación\n";
+            let csvContent = "Día,Hora,Fecha,Nombres,Consulta,Ubicación,Recepcionista\n";
+
+            // Ordenar para exportar
+            datosExportar.sort((a, b) => {
+                return new Date(`${b.fecha}T${b.hora}`) - new Date(`${a.fecha}T${a.hora}`);
+            });
 
             datosExportar.forEach(r => {
-                // Envolver textos en comillas para evitar problemas con comas en los datos
                 const fila = [
                     r.dia,
                     r.hora,
                     formatearFechaVisual(r.fecha),
-                    `"${r.nombres.replace(/"/g, '""')}"`,
-                    `"${r.consulta.replace(/"/g, '""')}"`,
-                    `"${r.ubicacion.replace(/"/g, '""')}"`
+                    `"${(r.nombres || '').replace(/"/g, '""')}"`,
+                    `"${(r.consulta || '').replace(/"/g, '""')}"`,
+                    `"${(r.ubicacion || '').replace(/"/g, '""')}"`,
+                    `"${(r.recepcionista || '').replace(/"/g, '""')}"`
                 ];
                 csvContent += fila.join(",") + "\n";
             });
 
-            // Añadir marca BOM para que Excel interprete correctamente las tildes y las ñ (UTF-8)
             const BOM = "\uFEFF";
             const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
