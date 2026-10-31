@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Visitantes - UMES</title>
+    <style>
+        :root {
+            --umes-green: #044b33;
+            --umes-light: #f4f7f6;
+            --umes-border: #d1d5db;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--umes-light);
+            color: #333;
+        }
+        header {
+            background-color: var(--umes-green);
+            padding: 15px 30px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        header img {
+            height: 55px;
+            background-color: white;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        h2 {
+            color: var(--umes-green);
+            border-bottom: 2px solid var(--umes-green);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+        input, select {
+            padding: 10px;
+            border: 1px solid var(--umes-border);
+            border-radius: 5px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: var(--umes-green);
+        }
+        button {
+            background-color: var(--umes-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 15px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #033624;
+        }
+        .btn-export {
+            background-color: #1d6f42; /* Verde Excel */
+        }
+        .btn-export:hover {
+            background-color: #144c2d;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+        .btn-delete:hover {
+            background-color: #bb2d3b;
+        }
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0 15px 0;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid var(--umes-border);
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid var(--umes-border);
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: var(--umes-green);
+            color: white;
+            white-space: nowrap;
+        }
+        tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <!-- Logo referenciado según la imagen original proporcionada -->
+        <img src="logo.png" alt="Logo UMES">
+        <h1>Registro y Control de Visitantes</h1>
+    </header>
+
+    <div class="container">
+        <h2>Ingreso de Nueva Visita</h2>
+        <form id="formVisitantes">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="fecha">Fecha</label>
+                    <input type="date" id="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label for="hora">Hora</label>
+                    <input type="time" id="hora" required>
+                </div>
+                <div class="form-group">
+                    <label for="nombres">Nombres del Visitante</label>
+                    <input type="text" id="nombres" placeholder="Ej. Juan Pérez" required>
+                </div>
+                <div class="form-group">
+                    <label for="consulta">Consulta / Trámite</label>
+                    <input type="text" id="consulta" placeholder="Ej. Entrega de papelería" required>
+                </div>
+                <div class="form-group">
+                    <label for="ubicacion">Ubicación / Destino</label>
+                    <input type="text" id="ubicacion" placeholder="Ej. Recepción / Contabilidad" required>
+                </div>
+            </div>
+            <button type="submit">Guardar Registro</button>
+        </form>
+
+        <div class="table-controls">
+            <div class="filter-group">
+                <label for="filtroMes"><strong>Ver registros de:</strong></label>
+                <input type="month" id="filtroMes">
+                <button type="button" id="btnLimpiar" style="background-color: #6c757d;">Mostrar Todos</button>
+            </div>
+            <button type="button" id="btnExportar" class="btn-export">📊 Exportar a Excel</button>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Día</th>
+                        <th>Hora</th>
+                        <th>Fecha</th>
+                        <th>Nombres</th>
+                        <th>Consulta</th>
+                        <th>Ubicación</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTabla">
+                    <!-- Los datos se inyectarán mediante JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar almacenamiento local
+        let registros = JSON.parse(localStorage.getItem('umes_registros_visitas')) || [];
+        const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+        // Elementos del DOM
+        const form = document.getElementById('formVisitantes');
+        const cuerpoTabla = document.getElementById('cuerpoTabla');
+        const filtroMes = document.getElementById('filtroMes');
+        const btnLimpiar = document.getElementById('btnLimpiar');
+        const btnExportar = document.getElementById('btnExportar');
+
+        // Configurar el mes actual por defecto al cargar
+        const fechaActual = new Date();
+        const mesActualFormato = fechaActual.getFullYear() + '-' + String(fechaActual.getMonth() + 1).padStart(2, '0');
+        filtroMes.value = mesActualFormato;
+
+        // Función para calcular el nombre del día
+        function obtenerNombreDia(fechaString) {
+            // Añadir T12:00:00 para evitar desajustes por zona horaria local
+            const fecha = new Date(fechaString + 'T12:00:00');
+            return diasSemana[fecha.getDay()];
+        }
+
+        // Función para formatear fecha de YYYY-MM-DD a DD/MM/YYYY
+        function formatearFechaVisual(fechaString) {
+            const partes = fechaString.split('-');
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        // Renderizar la tabla en base al filtro
+        function actualizarTabla() {
+            cuerpoTabla.innerHTML = '';
+            const filtro = filtroMes.value;
+
+            // Ordenar de más reciente a más antiguo
+            const registrosOrdenados = [...registros].sort((a, b) => {
+                const fechaA = new Date(`${a.fecha}T${a.hora}`);
+                const fechaB = new Date(`${b.fecha}T${b.hora}`);
+                return fechaB - fechaA;
+            });
+
+            registrosOrdenados.forEach((registro) => {
+                const mesRegistro = registro.fecha.substring(0, 7); // Obtener YYYY-MM
+
+                if (filtro && filtro !== mesRegistro) return; // Aplicar filtro de mes
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${registro.dia}</td>
+                    <td>${registro.hora}</td>
+                    <td>${formatearFechaVisual(registro.fecha)}</td>
+                    <td>${registro.nombres}</td>
+                    <td>${registro.consulta}</td>
+                    <td>${registro.ubicacion}</td>
+                    <td><button class="btn-delete" onclick="eliminarRegistro('${registro.id}')">Eliminar</button></td>
+                `;
+                cuerpoTabla.appendChild(tr);
+            });
+        }
+
+        // Evento para guardar un nuevo registro
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const fechaInput = document.getElementById('fecha').value;
+
+            const nuevoRegistro = {
+                id: Date.now().toString(), // Identificador único
+                dia: obtenerNombreDia(fechaInput),
+                fecha: fechaInput,
+                hora: document.getElementById('hora').value,
+                nombres: document.getElementById('nombres').value,
+                consulta: document.getElementById('consulta').value,
+                ubicacion: document.getElementById('ubicacion').value
+            };
+
+            registros.push(nuevoRegistro);
+            localStorage.setItem('umes_registros_visitas', JSON.stringify(registros));
+
+            form.reset();
+            actualizarTabla();
+        });
+
+        // Función para eliminar un registro
+        window.eliminarRegistro = function(id) {
+            if(confirm('¿Deseas eliminar este registro de visitante?')) {
+                registros = registros.filter(r => r.id !== id);
+                localStorage.setItem('umes_registros_visitas', JSON.stringify(registros));
+                actualizarTabla();
+            }
+        }
+
+        // Eventos de filtrado
+        filtroMes.addEventListener('change', actualizarTabla);
+        btnLimpiar.addEventListener('click', () => {
+            filtroMes.value = '';
+            actualizarTabla();
+        });
+
+        // Evento para exportar a Excel (CSV)
+        btnExportar.addEventListener('click', function() {
+            const filtro = filtroMes.value;
+            let datosExportar = registros;
+
+            if (filtro) {
+                datosExportar = registros.filter(r => r.fecha.substring(0, 7) === filtro);
+            }
+
+            if(datosExportar.length === 0) {
+                alert('No hay registros en el mes seleccionado para exportar.');
+                return;
+            }
+
+            // Cabeceras del CSV
+            let csvContent = "Día,Hora,Fecha,Nombres,Consulta,Ubicación\n";
+
+            datosExportar.forEach(r => {
+                // Envolver textos en comillas para evitar problemas con comas en los datos
+                const fila = [
+                    r.dia,
+                    r.hora,
+                    formatearFechaVisual(r.fecha),
+                    `"${r.nombres.replace(/"/g, '""')}"`,
+                    `"${r.consulta.replace(/"/g, '""')}"`,
+                    `"${r.ubicacion.replace(/"/g, '""')}"`
+                ];
+                csvContent += fila.join(",") + "\n";
+            });
+
+            // Añadir marca BOM para que Excel interprete correctamente las tildes y las ñ (UTF-8)
+            const BOM = "\uFEFF";
+            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Reporte_Visitas_UMES_${filtro || 'Historico'}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Carga inicial
+        actualizarTabla();
+    </script>
+</body>
+</html>
