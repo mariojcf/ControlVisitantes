@@ -207,6 +207,7 @@
     <div class="container">
         <h2>
             Ingreso de Nueva Visita
+            <span class="status-indicator online" id="statusCloud">Sincronizado</span>
         </h2>
         <form id="formVisitantes">
             <div class="form-grid">
@@ -268,7 +269,7 @@
                     </tr>
                 </thead>
                 <tbody id="cuerpoTabla">
-                    <!-- Los datos se inyectarán mediante JavaScript -->
+                    <tr><td colspan="8" style="text-align: center;">Cargando registros desde la nube...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -286,10 +287,29 @@
         </div>
     </div>
 
-    <!-- Script principal -->
-    <script>
-        // Inicializar almacenamiento local
-        let registros = JSON.parse(localStorage.getItem('umes_registros_visitas_local')) || [];
+    <!-- Script principal como módulo para Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBUCoF6RlDbGmNqo9n02lvuHDTdYeoa-s4",
+            authDomain: "controlvisitantes-9cb01.firebaseapp.com",
+            projectId: "controlvisitantes-9cb01",
+            storageBucket: "controlvisitantes-9cb01.firebasestorage.app",
+            messagingSenderId: "888743428272",
+            appId: "1:888743428272:web:79fbc40912daa25337bb75",
+            measurementId: "G-9L5VVDC41M"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const visitasRef = collection(db, "visitas");
+
+        // Variables globales
+        let registros = []; 
         let registroAEliminar = null;
         const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -299,6 +319,7 @@
         const filtroMes = document.getElementById('filtroMes');
         const btnLimpiar = document.getElementById('btnLimpiar');
         const btnExportar = document.getElementById('btnExportar');
+        const btnGuardar = document.getElementById('btnGuardar');
 
         // Elementos del Modal
         const deleteModal = document.getElementById('deleteModal');
@@ -318,6 +339,7 @@
         const horaActual = String(fechaActual.getHours()).padStart(2, '0') + ':' + String(fechaActual.getMinutes()).padStart(2, '0');
         document.getElementById('hora').value = horaActual;
 
+        // Funciones de utilidad
         function obtenerNombreDia(fechaString) {
             const fecha = new Date(fechaString + 'T12:00:00');
             return diasSemana[fecha.getDay()];
@@ -328,11 +350,25 @@
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
 
+        // --- Escuchar datos desde Firebase en tiempo real ---
+        const q = query(visitasRef, orderBy("timestamp", "desc"));
+        onSnapshot(q, (querySnapshot) => {
+            registros = [];
+            querySnapshot.forEach((documento) => {
+                registros.push({
+                    id: documento.id,
+                    ...documento.data()
+                });
+            });
+            actualizarTabla(); // Redibujar tabla con los datos nuevos
+        });
+
+        // --- Actualizar la vista de la tabla ---
         function actualizarTabla() {
             cuerpoTabla.innerHTML = '';
             const filtro = filtroMes.value;
 
-            // Ordenar de más reciente a más antiguo
+            // Ordenar de más reciente a más antiguo (por si las dudas, aunque Firestore ya lo hace)
             const registrosOrdenados = [...registros].sort((a, b) => {
                 const fechaA = new Date(`${a.fecha}T${a.hora}`);
                 const fechaB = new Date(`${b.fecha}T${b.hora}`);
@@ -365,7 +401,7 @@
                 cuerpoTabla.appendChild(tr);
             });
 
-            // Asignar eventos de eliminar
+            // Asignar eventos de eliminar dinámicamente
             document.querySelectorAll('.btn-delete').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = e.target.getAttribute('data-id');
@@ -374,35 +410,41 @@
             });
         }
 
-        // --- Guardar Datos ---
-        form.addEventListener('submit', function(e) {
+        // --- Guardar Datos en Firebase ---
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
+            btnGuardar.disabled = true;
+            btnGuardar.textContent = 'Guardando...';
 
             const fechaInput = document.getElementById('fecha').value;
 
             const nuevoRegistro = {
-                id: Date.now().toString(),
                 recepcionista: document.getElementById('recepcionista').value,
                 dia: obtenerNombreDia(fechaInput),
                 fecha: fechaInput,
                 hora: document.getElementById('hora').value,
                 nombres: document.getElementById('nombres').value,
                 consulta: document.getElementById('consulta').value,
-                ubicacion: document.getElementById('ubicacion').value
+                ubicacion: document.getElementById('ubicacion').value,
+                timestamp: serverTimestamp() // Tiempo en el servidor
             };
 
-            registros.push(nuevoRegistro);
-            localStorage.setItem('umes_registros_visitas_local', JSON.stringify(registros));
-
-            // Reiniciar solo campos de texto, dejar fecha/hora/recepcionista
-            document.getElementById('nombres').value = '';
-            document.getElementById('consulta').value = '';
-            document.getElementById('ubicacion').value = '';
-
-            actualizarTabla();
+            try {
+                await addDoc(visitasRef, nuevoRegistro);
+                // Reiniciar solo campos de texto, dejar fecha/hora/recepcionista
+                document.getElementById('nombres').value = '';
+                document.getElementById('consulta').value = '';
+                document.getElementById('ubicacion').value = '';
+            } catch (error) {
+                console.error("Error al guardar: ", error);
+                alert("Hubo un error al guardar. Revisa tu conexión.");
+            } finally {
+                btnGuardar.disabled = false;
+                btnGuardar.textContent = 'Guardar Registro';
+            }
         });
 
-        // --- Sistema de Modal para Eliminar ---
+        // --- Sistema de Modal para Eliminar en Firebase ---
         function confirmarEliminacion(id) {
             registroAEliminar = id;
             deleteModal.style.display = 'flex';
@@ -413,14 +455,22 @@
             deleteModal.style.display = 'none';
         });
 
-        btnConfirmDelete.addEventListener('click', () => {
+        btnConfirmDelete.addEventListener('click', async () => {
             if (registroAEliminar) {
-                registros = registros.filter(r => r.id !== registroAEliminar);
-                localStorage.setItem('umes_registros_visitas_local', JSON.stringify(registros));
-                actualizarTabla();
-
-                registroAEliminar = null;
-                deleteModal.style.display = 'none';
+                btnConfirmDelete.disabled = true;
+                btnConfirmDelete.textContent = 'Eliminando...';
+                
+                try {
+                    await deleteDoc(doc(db, "visitas", registroAEliminar));
+                    registroAEliminar = null;
+                    deleteModal.style.display = 'none';
+                } catch (error) {
+                    console.error("Error al eliminar: ", error);
+                    alert("No se pudo eliminar el registro.");
+                } finally {
+                    btnConfirmDelete.disabled = false;
+                    btnConfirmDelete.textContent = 'Sí, Eliminar';
+                }
             }
         });
 
@@ -481,9 +531,6 @@
             link.click();
             document.body.removeChild(link);
         });
-
-        // Carga inicial
-        actualizarTabla();
     </script>
 </body>
 </html>
