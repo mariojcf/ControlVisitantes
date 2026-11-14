@@ -4,6 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Visitantes - UMES</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const img = new Image();
+            img.src = 'logo.png';
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.roundRect(0, 0, 64, 64, 14);
+                ctx.fill();
+
+                const scale = Math.min(52 / img.width, 52 / img.height);
+                const w = img.width * scale;
+                const h = img.height * scale;
+                ctx.drawImage(img, (64 - w) / 2, (64 - h) / 2, w, h);
+
+                const link = document.querySelector("link[rel~='icon']");
+                if (link) link.href = canvas.toDataURL('image/png');
+            };
+        });
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -220,12 +247,8 @@
         const selectRecepcionista = document.getElementById('recepcionista');
         const deleteModal = document.getElementById('deleteModal');
 
-        // Detectar recepcionista automáticamente según horario:
-        // - Sábado (6): 7:00 (420 min) a 14:00 (840 min) -> Mario
-        // - Lunes a Viernes (1-5): 7:00 (420 min) a 12:44 (764 min) -> Brenda
-        // - Lunes a Viernes (1-5): 12:45 (765 min) a 20:00 (1200 min) -> Wendy
         function detectarRecepcionistaPorHorario(fechaObj = new Date()) {
-            const dia = fechaObj.getDay(); // 0=Dom, 1=Lun ... 6=Sáb
+            const dia = fechaObj.getDay();
             const minutosTotales = fechaObj.getHours() * 60 + fechaObj.getMinutes();
 
             if (dia === 6) {
@@ -291,7 +314,6 @@
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
 
-        // Escuchar datos en tiempo real
         const q = query(visitasRef, orderBy("timestamp", "desc"));
         onSnapshot(q, (querySnapshot) => {
             registros = [];
@@ -381,7 +403,6 @@
             });
         }
 
-        // Guardar nueva visita
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             btnGuardar.disabled = true;
@@ -416,7 +437,6 @@
             }
         });
 
-        // Modal de eliminación
         document.getElementById('btnCancelDelete').addEventListener('click', () => {
             registroAEliminar = null;
             deleteModal.classList.add('hidden');
@@ -443,7 +463,6 @@
             }
         });
 
-        // Filtros
         filtroMes.addEventListener('change', actualizarTabla);
         searchInput.addEventListener('input', actualizarTabla);
         btnLimpiar.addEventListener('click', () => {
@@ -452,7 +471,6 @@
             actualizarTabla();
         });
 
-        // Exportar a Excel (CSV)
         btnExportar.addEventListener('click', function() {
             if (registrosFiltradosActuales.length === 0) {
                 showToast('No hay registros para exportar', true);
