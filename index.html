@@ -4,295 +4,192 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Visitantes - UMES</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --umes-green: #044b33;
-            --umes-light: #f4f7f6;
-            --umes-border: #d1d5db;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--umes-light);
-            color: #333;
-        }
-        header {
-            background-color: var(--umes-green);
-            padding: 15px 30px;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 25px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-        }
-        h2 {
-            color: var(--umes-green);
-            border-bottom: 2px solid var(--umes-green);
-            padding-bottom: 10px;
-            margin-top: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .status-indicator {
-            font-size: 12px;
-            padding: 4px 8px;
-            border-radius: 12px;
-            background-color: #ffc107;
-            color: #000;
-        }
-        .status-indicator.online {
-            background-color: #28a745;
-            color: white;
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: #555;
-        }
-        input, select {
-            padding: 10px;
-            border: 1px solid var(--umes-border);
-            border-radius: 5px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        input:focus, select:focus {
-            border-color: var(--umes-green);
-        }
-        button {
-            background-color: var(--umes-green);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 15px;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #033624;
-        }
-        button:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-        .btn-export {
-            background-color: #1d6f42;
-        }
-        .btn-export:hover {
-            background-color: #144c2d;
-        }
-        .btn-delete {
-            background-color: #dc3545;
-            padding: 6px 12px;
-            font-size: 13px;
-        }
-        .btn-delete:hover {
-            background-color: #bb2d3b;
-        }
-        .table-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 30px 0 15px 0;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px solid var(--umes-border);
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-        th, td {
-            border: 1px solid var(--umes-border);
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background-color: var(--umes-green);
-            color: white;
-            white-space: nowrap;
-        }
-        tr:nth-child(even) {
-            background-color: #fcfcfc;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        /* Custom Modal Styles */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-box {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-        .modal-box h3 {
-            margin-top: 0;
-            color: var(--umes-green);
-        }
-        .modal-actions {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .btn-cancel {
-            background-color: #6c757d;
-        }
-        .btn-cancel:hover {
-            background-color: #5a6268;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body>
-    <header>
-        <h1>Registro y Control de Visitantes</h1>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Encabezado Institucional -->
+    <header class="bg-[#00553d] text-white shadow-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="bg-white rounded-lg p-1.5 h-12 w-12 flex items-center justify-center shadow-sm shrink-0">
+                    <img src="logo.png" alt="Logo UMES" class="h-full w-full object-contain">
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight leading-tight">Registro y Control de Visitantes</h1>
+                    <p class="text-emerald-200 text-xs font-medium">Universidad Mesoamericana • Recepción</p>
+                </div>
+            </div>
+            <div id="statusCloud" class="hidden sm:flex items-center gap-2 bg-[#00422f] px-3.5 py-1.5 rounded-lg border border-emerald-700/50 text-xs font-medium text-emerald-100">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Sincronizado</span>
+            </div>
+        </div>
     </header>
-    <div class="container">
-        <h2>
-            Ingreso de Nueva Visita
-            <span class="status-indicator online" id="statusCloud">Sincronizado</span>
-        </h2>
-        <form id="formVisitantes">
-            <div class="form-grid">
-                <!-- Nuevo campo de Recepcionista -->
-                <div class="form-group">
-                    <label for="recepcionista">Recepcionista en turno</label>
-                    <select id="recepcionista" required>
-                        <option value="" disabled selected>Seleccione...</option>
-                        <option value="Recepcionista 1">Brenda</option>
-                        <option value="Recepcionista 2">Wendy</option>
-                        <option value="Recepcionista 3">Mario</option>
-                    </select>
+
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
+
+        <!-- Indicadores Rápidos -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Visitantes de Hoy</p>
+                    <p id="statHoy" class="text-2xl font-bold text-slate-800 mt-0.5">0</p>
                 </div>
-                <div class="form-group">
-                    <label for="fecha">Fecha</label>
-                    <input type="date" id="fecha" required>
-                </div>
-                <div class="form-group">
-                    <label for="hora">Hora</label>
-                    <input type="time" id="hora" required>
-                </div>
-                <div class="form-group">
-                    <label for="nombres">Nombres del Visitante</label>
-                    <input type="text" id="nombres" placeholder="Ej. Juan Pérez" required>
-                </div>
-                <div class="form-group">
-                    <label for="consulta">Consulta / Trámite</label>
-                    <input type="text" id="consulta" placeholder="Ej. Entrega de papelería" required>
-                </div>
-                <div class="form-group">
-                    <label for="ubicacion">Ubicación / Destino</label>
-                    <input type="text" id="ubicacion" placeholder="Ej. Recepción / Contabilidad" required>
+                <div class="h-10 w-10 rounded-lg bg-emerald-50 text-[#00553d] flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 </div>
             </div>
-            <button type="submit" id="btnGuardar">Guardar Registro</button>
-        </form>
 
-        <div class="table-controls">
-            <div class="filter-group">
-                <label for="filtroMes"><strong>Ver registros de:</strong></label>
-                <input type="month" id="filtroMes">
-                <button type="button" id="btnLimpiar" style="background-color: #6c757d;">Mostrar Todos</button>
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Registros Mostrados</p>
+                    <p id="statTotal" class="text-2xl font-bold text-[#00553d] mt-0.5">0</p>
+                </div>
+                <div class="h-10 w-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
             </div>
-            <button type="button" id="btnExportar" class="btn-export">📊 Exportar a Excel</button>
         </div>
 
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Día</th>
-                        <th>Hora</th>
-                        <th>Fecha</th>
-                        <th>Visitante</th>
-                        <th>Consulta</th>
-                        <th>Ubicación</th>
-                        <th>Recepcionista</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="cuerpoTabla">
-                    <tr><td colspan="8" style="text-align: center;">Cargando registros desde la nube...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+        <!-- Formulario de Ingreso -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <h2 class="text-[#00553d] font-bold text-base flex items-center gap-2">
+                    <span class="w-1.5 h-5 bg-[#00553d] rounded-full"></span>
+                    Ingreso de Nueva Visita
+                </h2>
+                <button type="button" id="btnAhora" class="text-xs font-medium text-[#00553d] hover:bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 transition">
+                    Actualizar fecha y hora actual
+                </button>
+            </div>
+
+            <form id="formVisitantes" class="p-6 space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label for="recepcionista" class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Recepcionista en turno *</label>
+                        <select id="recepcionista" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
+                            <option value="" disabled selected>Seleccione...</option>
+                            <option value="Brenda">Brenda (L-V 7:00 AM - 3:00 PM)</option>
+                            <option value="Wendy">Wendy (L-V 12:45 PM - 8:00 PM)</option>
+                            <option value="Mario">Mario (Sáb 7:00 AM - 2:00 PM)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="fecha" class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Fecha *</label>
+                        <input type="date" id="fecha" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
+                    </div>
+                    <div>
+                        <label for="hora" class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Hora de Ingreso *</label>
+                        <input type="time" id="hora" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
+                    </div>
+
+                    <div>
+                        <label for="nombres" class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Nombres del Visitante *</label>
+                        <input type="text" id="nombres" placeholder="Ej. Juan Pérez" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
+                    </div>
+                    <div>
+                        <label for="consulta" class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Consulta / Trámite *</label>
+                        <input type="text" id="consulta" placeholder="Ej. Entrega de papelería, reunión..." required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
+                    </div>
+                    <div>
+                        <label for="ubicacion" class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Ubicación / Destino *</label>
+                        <input type="text" id="ubicacion" placeholder="Ej. Contabilidad, Decanatura, Caja..." required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
+                    </div>
+                </div>
+
+                <div class="pt-1 flex justify-end">
+                    <button type="submit" id="btnGuardar" class="bg-[#00553d] hover:bg-[#00402e] active:scale-[0.99] text-white text-sm font-semibold py-2.5 px-6 rounded-lg shadow-sm transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        Guardar Registro
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Controles de Búsqueda, Filtro y Exportación -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-4 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+                <!-- Buscador -->
+                <div class="relative flex-1 max-w-md">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" id="searchInput" placeholder="Buscar visitante, trámite, destino o recepcionista..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d]">
+                </div>
+
+                <!-- Filtro por Mes -->
+                <div class="flex items-center gap-2">
+                    <input type="month" id="filtroMes" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d]">
+                    <button type="button" id="btnLimpiar" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium py-2 px-3.5 rounded-lg transition whitespace-nowrap">
+                        Mostrar Todos
+                    </button>
+                </div>
+            </div>
+
+            <button type="button" id="btnExportar" class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium py-2 px-4 rounded-lg shadow-sm flex items-center justify-center gap-2 transition whitespace-nowrap">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Exportar a Excel
+            </button>
+        </section>
+
+        <!-- Tabla de Registros -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-[#00553d] text-white text-xs uppercase tracking-wider">
+                            <th class="py-3.5 px-4 font-semibold w-40 whitespace-nowrap">Día / Fecha / Hora</th>
+                            <th class="py-3.5 px-4 font-semibold w-52">Visitante</th>
+                            <th class="py-3.5 px-4 font-semibold">Consulta / Trámite</th>
+                            <th class="py-3.5 px-4 font-semibold w-48 whitespace-nowrap">Ubicación / Destino</th>
+                            <th class="py-3.5 px-4 font-semibold w-32 whitespace-nowrap">Recepcionista</th>
+                            <th class="py-3.5 px-4 font-semibold w-20 text-right whitespace-nowrap">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla" class="divide-y divide-slate-100 text-sm">
+                        <tr><td colspan="6" class="text-center py-10 text-slate-500">Cargando registros desde la nube...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
 
     <!-- Modal de confirmación para eliminar -->
-    <div id="deleteModal" class="modal-overlay">
-        <div class="modal-box">
-            <h3>Eliminar Registro</h3>
-            <p>¿Estás seguro de que deseas eliminar este registro de visitante? Esta acción no se puede deshacer y se borrará para todos los recepcionistas.</p>
-            <div class="modal-actions">
-                <button type="button" class="btn-cancel" id="btnCancelDelete">Cancelar</button>
-                <button type="button" class="btn-delete" id="btnConfirmDelete">Sí, Eliminar</button>
+    <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-[1px] justify-center items-center z-50 p-4">
+        <div class="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full text-center border border-slate-200">
+            <div class="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800">Eliminar Registro</h3>
+            <p class="text-sm text-slate-500 mt-1.5">¿Estás seguro de eliminar este visitante? Se borrará para todos los recepcionistas.</p>
+            <div class="flex justify-center gap-3 mt-5">
+                <button type="button" id="btnCancelDelete" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg text-sm transition">Cancelar</button>
+                <button type="button" id="btnConfirmDelete" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition">Sí, Eliminar</button>
             </div>
         </div>
     </div>
 
-    <!-- Script principal como módulo para Firebase -->
+    <!-- Toast de Notificación -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 z-50 bg-slate-900 text-white text-sm px-4 py-3 rounded-lg shadow-lg flex items-center gap-2.5">
+        <span id="toastIcon" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+        <span id="toastMsg">Listo</span>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
-        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBUCoF6RlDbGmNqo9n02lvuHDTdYeoa-s4",
             authDomain: "controlvisitantes-9cb01.firebaseapp.com",
@@ -303,114 +200,188 @@
             measurementId: "G-9L5VVDC41M"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const visitasRef = collection(db, "visitas");
 
-        // Variables globales
-        let registros = []; 
+        let registros = [];
+        let registrosFiltradosActuales = [];
         let registroAEliminar = null;
+        let cambioManualRecep = false;
         const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-        // Elementos del DOM
         const form = document.getElementById('formVisitantes');
         const cuerpoTabla = document.getElementById('cuerpoTabla');
         const filtroMes = document.getElementById('filtroMes');
+        const searchInput = document.getElementById('searchInput');
         const btnLimpiar = document.getElementById('btnLimpiar');
         const btnExportar = document.getElementById('btnExportar');
         const btnGuardar = document.getElementById('btnGuardar');
-
-        // Elementos del Modal
+        const selectRecepcionista = document.getElementById('recepcionista');
         const deleteModal = document.getElementById('deleteModal');
-        const btnCancelDelete = document.getElementById('btnCancelDelete');
-        const btnConfirmDelete = document.getElementById('btnConfirmDelete');
 
-        // Configurar el mes actual por defecto al cargar
-        const fechaActual = new Date();
-        const mesActualFormato = fechaActual.getFullYear() + '-' + String(fechaActual.getMonth() + 1).padStart(2, '0');
-        filtroMes.value = mesActualFormato;
+        // Detectar recepcionista automáticamente según horario:
+        // - Sábado (6): 7:00 (420 min) a 14:00 (840 min) -> Mario
+        // - Lunes a Viernes (1-5): 7:00 (420 min) a 12:44 (764 min) -> Brenda
+        // - Lunes a Viernes (1-5): 12:45 (765 min) a 20:00 (1200 min) -> Wendy
+        function detectarRecepcionistaPorHorario(fechaObj = new Date()) {
+            const dia = fechaObj.getDay(); // 0=Dom, 1=Lun ... 6=Sáb
+            const minutosTotales = fechaObj.getHours() * 60 + fechaObj.getMinutes();
 
-        // Establecer fecha actual en el input del formulario para ahorrar tiempo
-        const diaActualFormato = fechaActual.getFullYear() + '-' + String(fechaActual.getMonth() + 1).padStart(2, '0') + '-' + String(fechaActual.getDate()).padStart(2, '0');
-        document.getElementById('fecha').value = diaActualFormato;
+            if (dia === 6) {
+                if (minutosTotales >= 420 && minutosTotales <= 840) return 'Mario';
+            } else if (dia >= 1 && dia <= 5) {
+                if (minutosTotales >= 765 && minutosTotales <= 1200) return 'Wendy';
+                if (minutosTotales >= 420 && minutosTotales < 765) return 'Brenda';
+            }
+            return '';
+        }
 
-        // Formatear hora actual (HH:MM)
-        const horaActual = String(fechaActual.getHours()).padStart(2, '0') + ':' + String(fechaActual.getMinutes()).padStart(2, '0');
-        document.getElementById('hora').value = horaActual;
+        selectRecepcionista.addEventListener('change', () => {
+            cambioManualRecep = true;
+        });
 
-        // Funciones de utilidad
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = message;
+            document.getElementById('toastIcon').className = `w-2.5 h-2.5 rounded-full ${isError ? 'bg-red-400' : 'bg-emerald-400'}`;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+
+        function setFechaHoraActual() {
+            const ahora = new Date();
+            const yyyy = ahora.getFullYear();
+            const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+            const dd = String(ahora.getDate()).padStart(2, '0');
+            const hh = String(ahora.getHours()).padStart(2, '0');
+            const min = String(ahora.getMinutes()).padStart(2, '0');
+
+            document.getElementById('fecha').value = `${yyyy}-${mm}-${dd}`;
+            document.getElementById('hora').value = `${hh}:${min}`;
+
+            if (!cambioManualRecep) {
+                const sugerido = detectarRecepcionistaPorHorario(ahora);
+                if (sugerido) selectRecepcionista.value = sugerido;
+            }
+            return `${yyyy}-${mm}`;
+        }
+
+        function getTodayISO() {
+            const ahora = new Date();
+            return `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
+        }
+
+        filtroMes.value = setFechaHoraActual();
+
+        document.getElementById('btnAhora').addEventListener('click', () => {
+            cambioManualRecep = false;
+            setFechaHoraActual();
+            showToast('Fecha, hora y turno actualizados');
+        });
+
         function obtenerNombreDia(fechaString) {
             const fecha = new Date(fechaString + 'T12:00:00');
             return diasSemana[fecha.getDay()];
         }
 
         function formatearFechaVisual(fechaString) {
+            if (!fechaString) return '';
             const partes = fechaString.split('-');
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
 
-        // --- Escuchar datos desde Firebase en tiempo real ---
+        // Escuchar datos en tiempo real
         const q = query(visitasRef, orderBy("timestamp", "desc"));
         onSnapshot(q, (querySnapshot) => {
             registros = [];
             querySnapshot.forEach((documento) => {
-                registros.push({
-                    id: documento.id,
-                    ...documento.data()
-                });
+                registros.push({ id: documento.id, ...documento.data() });
             });
-            actualizarTabla(); // Redibujar tabla con los datos nuevos
+            actualizarTabla();
         });
 
-        // --- Actualizar la vista de la tabla ---
         function actualizarTabla() {
             cuerpoTabla.innerHTML = '';
             const filtro = filtroMes.value;
+            const termino = searchInput.value.toLowerCase().trim();
 
-            // Ordenar de más reciente a más antiguo (por si las dudas, aunque Firestore ya lo hace)
             const registrosOrdenados = [...registros].sort((a, b) => {
                 const fechaA = new Date(`${a.fecha}T${a.hora}`);
                 const fechaB = new Date(`${b.fecha}T${b.hora}`);
                 return fechaB - fechaA;
             });
 
-            const registrosFiltrados = registrosOrdenados.filter((registro) => {
-                const mesRegistro = registro.fecha.substring(0, 7);
-                if (filtro && filtro !== mesRegistro) return false;
-                return true;
+            const mapaNombres = {
+                'Recepcionista 1': 'Brenda',
+                'Recepcionista 2': 'Wendy',
+                'Recepcionista 3': 'Mario'
+            };
+
+            registrosFiltradosActuales = registrosOrdenados.filter((registro) => {
+                const mesRegistro = (registro.fecha || '').substring(0, 7);
+                const coincideMes = !filtro || filtro === mesRegistro;
+                const recepNormalizado = mapaNombres[registro.recepcionista] || registro.recepcionista || '';
+                const coincideTexto = !termino || [
+                    registro.nombres,
+                    registro.consulta,
+                    registro.ubicacion,
+                    recepNormalizado
+                ].some(campo => (campo || '').toLowerCase().includes(termino));
+
+                return coincideMes && coincideTexto;
             });
 
-            if (registrosFiltrados.length === 0) {
-                cuerpoTabla.innerHTML = `<tr><td colspan="8" style="text-align: center;">No hay registros para el mes seleccionado</td></tr>`;
+            const hoy = getTodayISO();
+            document.getElementById('statHoy').textContent = registros.filter(r => r.fecha === hoy).length;
+            document.getElementById('statTotal').textContent = registrosFiltradosActuales.length;
+
+            if (registrosFiltradosActuales.length === 0) {
+                cuerpoTabla.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-500">No se encontraron registros para los filtros seleccionados.</td></tr>`;
                 return;
             }
 
-            registrosFiltrados.forEach((registro) => {
+            registrosFiltradosActuales.forEach((registro) => {
                 const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/90 transition duration-150 align-top';
+
+                const nombreRecep = mapaNombres[registro.recepcionista] || registro.recepcionista || 'N/A';
+
                 tr.innerHTML = `
-                    <td>${registro.dia}</td>
-                    <td>${registro.hora}</td>
-                    <td>${formatearFechaVisual(registro.fecha)}</td>
-                    <td>${registro.nombres}</td>
-                    <td>${registro.consulta}</td>
-                    <td>${registro.ubicacion}</td>
-                    <td><strong>${registro.recepcionista || 'N/A'}</strong></td>
-                    <td><button class="btn-delete" data-id="${registro.id}">Eliminar</button></td>
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                        <div class="font-semibold text-slate-800">${registro.dia || ''} • ${formatearFechaVisual(registro.fecha)}</div>
+                        <div class="text-xs text-slate-400">${registro.hora} hrs</div>
+                    </td>
+                    <td class="py-3.5 px-4 font-semibold text-slate-800">${registro.nombres}</td>
+                    <td class="py-3.5 px-4 min-w-[280px]">
+                        <p class="text-slate-700 leading-relaxed whitespace-normal break-words">${registro.consulta}</p>
+                    </td>
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                        <span class="inline-block text-xs font-medium bg-emerald-50 text-[#00553d] border border-emerald-200/70 px-2.5 py-1 rounded-md">${registro.ubicacion}</span>
+                    </td>
+                    <td class="py-3.5 px-4 whitespace-nowrap font-medium text-slate-700">${nombreRecep}</td>
+                    <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                        <button class="btn-delete text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition" data-id="${registro.id}" title="Eliminar registro">
+                            <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </td>
                 `;
                 cuerpoTabla.appendChild(tr);
             });
 
-            // Asignar eventos de eliminar dinámicamente
             document.querySelectorAll('.btn-delete').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const id = e.target.getAttribute('data-id');
-                    if (id) confirmarEliminacion(id);
+                    const id = e.currentTarget.getAttribute('data-id');
+                    if (id) {
+                        registroAEliminar = id;
+                        deleteModal.classList.remove('hidden');
+                        deleteModal.classList.add('flex');
+                    }
                 });
             });
         }
 
-        // --- Guardar Datos en Firebase ---
+        // Guardar nueva visita
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             btnGuardar.disabled = true;
@@ -419,117 +390,106 @@
             const fechaInput = document.getElementById('fecha').value;
 
             const nuevoRegistro = {
-                recepcionista: document.getElementById('recepcionista').value,
+                recepcionista: selectRecepcionista.value,
                 dia: obtenerNombreDia(fechaInput),
                 fecha: fechaInput,
                 hora: document.getElementById('hora').value,
-                nombres: document.getElementById('nombres').value,
-                consulta: document.getElementById('consulta').value,
-                ubicacion: document.getElementById('ubicacion').value,
-                timestamp: serverTimestamp() // Tiempo en el servidor
+                nombres: document.getElementById('nombres').value.trim(),
+                consulta: document.getElementById('consulta').value.trim(),
+                ubicacion: document.getElementById('ubicacion').value.trim(),
+                timestamp: serverTimestamp()
             };
 
             try {
                 await addDoc(visitasRef, nuevoRegistro);
-                // Reiniciar solo campos de texto, dejar fecha/hora/recepcionista
                 document.getElementById('nombres').value = '';
                 document.getElementById('consulta').value = '';
                 document.getElementById('ubicacion').value = '';
+                setFechaHoraActual();
+                showToast('Visitante registrado correctamente');
             } catch (error) {
                 console.error("Error al guardar: ", error);
-                alert("Hubo un error al guardar. Revisa tu conexión.");
+                showToast('Hubo un error al guardar', true);
             } finally {
                 btnGuardar.disabled = false;
-                btnGuardar.textContent = 'Guardar Registro';
+                btnGuardar.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Guardar Registro`;
             }
         });
 
-        // --- Sistema de Modal para Eliminar en Firebase ---
-        function confirmarEliminacion(id) {
-            registroAEliminar = id;
-            deleteModal.style.display = 'flex';
-        }
-
-        btnCancelDelete.addEventListener('click', () => {
+        // Modal de eliminación
+        document.getElementById('btnCancelDelete').addEventListener('click', () => {
             registroAEliminar = null;
-            deleteModal.style.display = 'none';
+            deleteModal.classList.add('hidden');
+            deleteModal.classList.remove('flex');
         });
 
-        btnConfirmDelete.addEventListener('click', async () => {
-            if (registroAEliminar) {
-                btnConfirmDelete.disabled = true;
-                btnConfirmDelete.textContent = 'Eliminando...';
-                
-                try {
-                    await deleteDoc(doc(db, "visitas", registroAEliminar));
-                    registroAEliminar = null;
-                    deleteModal.style.display = 'none';
-                } catch (error) {
-                    console.error("Error al eliminar: ", error);
-                    alert("No se pudo eliminar el registro.");
-                } finally {
-                    btnConfirmDelete.disabled = false;
-                    btnConfirmDelete.textContent = 'Sí, Eliminar';
-                }
+        document.getElementById('btnConfirmDelete').addEventListener('click', async () => {
+            if (!registroAEliminar) return;
+            const btnConfirm = document.getElementById('btnConfirmDelete');
+            btnConfirm.disabled = true;
+            btnConfirm.textContent = 'Eliminando...';
+
+            try {
+                await deleteDoc(doc(db, "visitas", registroAEliminar));
+                registroAEliminar = null;
+                deleteModal.classList.add('hidden');
+                deleteModal.classList.remove('flex');
+                showToast('Registro eliminado');
+            } catch (error) {
+                showToast('No se pudo eliminar el registro', true);
+            } finally {
+                btnConfirm.disabled = false;
+                btnConfirm.textContent = 'Sí, Eliminar';
             }
         });
 
-        // --- Eventos de filtrado ---
+        // Filtros
         filtroMes.addEventListener('change', actualizarTabla);
+        searchInput.addEventListener('input', actualizarTabla);
         btnLimpiar.addEventListener('click', () => {
             filtroMes.value = '';
+            searchInput.value = '';
             actualizarTabla();
         });
 
-        // --- Exportar a Excel (CSV) ---
+        // Exportar a Excel (CSV)
         btnExportar.addEventListener('click', function() {
-            const filtro = filtroMes.value;
-            let datosExportar = registros;
-
-            if (filtro) {
-                datosExportar = registros.filter(r => r.fecha.substring(0, 7) === filtro);
-            }
-
-            if(datosExportar.length === 0) {
-                const originalText = btnExportar.textContent;
-                btnExportar.textContent = '⚠️ Sin datos';
-                btnExportar.style.backgroundColor = '#dc3545';
-                setTimeout(() => {
-                    btnExportar.textContent = originalText;
-                    btnExportar.style.backgroundColor = '';
-                }, 3000);
+            if (registrosFiltradosActuales.length === 0) {
+                showToast('No hay registros para exportar', true);
                 return;
             }
 
-            let csvContent = "Día,Hora,Fecha,Nombres,Consulta,Ubicación,Recepcionista\n";
+            const mapaNombres = {
+                'Recepcionista 1': 'Brenda',
+                'Recepcionista 2': 'Wendy',
+                'Recepcionista 3': 'Mario'
+            };
 
-            // Ordenar para exportar
-            datosExportar.sort((a, b) => {
-                return new Date(`${b.fecha}T${b.hora}`) - new Date(`${a.fecha}T${a.hora}`);
-            });
+            let csvContent = "Día,Fecha,Hora,Visitante,Consulta / Trámite,Ubicación / Destino,Recepcionista\n";
 
-            datosExportar.forEach(r => {
+            registrosFiltradosActuales.forEach(r => {
+                const recep = mapaNombres[r.recepcionista] || r.recepcionista || 'N/A';
                 const fila = [
-                    r.dia,
-                    r.hora,
+                    r.dia || '',
                     formatearFechaVisual(r.fecha),
+                    r.hora || '',
                     `"${(r.nombres || '').replace(/"/g, '""')}"`,
                     `"${(r.consulta || '').replace(/"/g, '""')}"`,
                     `"${(r.ubicacion || '').replace(/"/g, '""')}"`,
-                    `"${(r.recepcionista || '').replace(/"/g, '""')}"`
+                    `"${recep.replace(/"/g, '""')}"`
                 ];
                 csvContent += fila.join(",") + "\n";
             });
 
-            const BOM = "\uFEFF";
-            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
+            const filtro = filtroMes.value;
+            link.href = URL.createObjectURL(blob);
             link.setAttribute("download", `Reporte_Visitas_UMES_${filtro || 'Historico'}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            showToast('Reporte exportado a Excel');
         });
     </script>
 </body>
