@@ -32,16 +32,15 @@
         });
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Librería SheetJS para exportación real a Excel (.xlsx) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
@@ -78,18 +77,8 @@
 
     <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
 
-        <!-- Indicadores Rápidos (3 Tarjetas) -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">En Campus Ahora</p>
-                    <p id="statActivos" class="text-2xl font-bold text-amber-600 mt-0.5">0</p>
-                </div>
-                <div class="h-10 w-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-            </div>
-
+        <!-- Indicadores Rápidos -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Visitantes de Hoy</p>
@@ -102,7 +91,7 @@
 
             <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Registros Filtrados</p>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Registros Mostrados</p>
                     <p id="statTotal" class="text-2xl font-bold text-[#00553d] mt-0.5">0</p>
                 </div>
                 <div class="h-10 w-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
@@ -228,10 +217,7 @@
                 <button type="button" id="btnFiltroHoy" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-[#00553d] hover:border-emerald-200 transition">
                     Solo Hoy
                 </button>
-                <button type="button" id="btnFiltroActivos" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200 transition">
-                    En Campus Ahora
-                </button>
-                <button type="button" id="btnFiltroMesActual" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-emerald-200 bg-emerald-50 text-[#00553d] transition">
+                <button type="button" id="btnFiltroMesActual" class="quick-filter text-xs font-semibold px-3 py-1.5 rounded-md border border-emerald-300 bg-emerald-50 text-[#00553d] transition">
                     Mes Actual
                 </button>
                 <button type="button" id="btnLimpiar" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition">
@@ -240,23 +226,27 @@
             </div>
         </section>
 
-        <!-- Tabla de Registros -->
+        <!-- Tabla de Registros con Barra Horizontal Superior -->
         <section class="bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+            <!-- Barra de desplazamiento horizontal superior sincronizada -->
+            <div id="topScroll" class="overflow-x-auto border-b border-slate-200 bg-slate-50">
+                <div id="topScrollSpacer" class="h-1"></div>
+            </div>
+
+            <div id="tableScroll" class="overflow-x-auto">
+                <table id="tablaVisitantes" class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-[#00553d] text-white text-xs uppercase tracking-wider">
-                            <th class="py-3.5 px-4 font-semibold w-44 whitespace-nowrap">Día / Fecha / Ingreso</th>
+                            <th class="py-3.5 px-4 font-semibold w-44 whitespace-nowrap">Día / Fecha / Hora</th>
                             <th class="py-3.5 px-4 font-semibold w-48">Visitante</th>
                             <th class="py-3.5 px-4 font-semibold">Consulta / Trámite</th>
                             <th class="py-3.5 px-4 font-semibold w-44 whitespace-nowrap">Ubicación / Destino</th>
-                            <th class="py-3.5 px-4 font-semibold w-44 whitespace-nowrap">Estado / Salida</th>
                             <th class="py-3.5 px-4 font-semibold w-28 whitespace-nowrap">Recepción</th>
                             <th class="py-3.5 px-4 font-semibold w-24 text-right whitespace-nowrap">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="cuerpoTabla" class="divide-y divide-slate-100 text-sm">
-                        <tr><td colspan="7" class="text-center py-10 text-slate-500">Cargando registros desde la nube...</td></tr>
+                        <tr><td colspan="6" class="text-center py-10 text-slate-500">Cargando registros desde la nube...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -273,7 +263,7 @@
                 </button>
             </div>
             <form id="formEditar" class="p-6 space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Recepcionista</label>
                         <select id="editRecepcionista" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:border-[#00553d]">
@@ -289,10 +279,6 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Hora de Ingreso</label>
                         <input type="time" id="editHora" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00553d]">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Hora de Salida (Opcional)</label>
-                        <input type="time" id="editHoraSalida" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00553d]">
                     </div>
                 </div>
                 <div>
@@ -360,7 +346,6 @@
         let registroAEditar = null;
         let cambioManualRecep = false;
         let soloHoyActivo = false;
-        let soloActivosCampus = false;
 
         const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         const mapaNombres = {
@@ -379,6 +364,36 @@
         const selectRecepcionista = document.getElementById('recepcionista');
         const deleteModal = document.getElementById('deleteModal');
         const editModal = document.getElementById('editModal');
+
+        // --- Sincronización de Barra Horizontal Superior e Inferior ---
+        const topScroll = document.getElementById('topScroll');
+        const topScrollSpacer = document.getElementById('topScrollSpacer');
+        const tableScroll = document.getElementById('tableScroll');
+        const tablaVisitantes = document.getElementById('tablaVisitantes');
+
+        function sincronizarAnchoBarraSuperior() {
+            const anchoTabla = tablaVisitantes.scrollWidth;
+            const anchoContenedor = tableScroll.clientWidth;
+            topScrollSpacer.style.width = `${anchoTabla}px`;
+            topScroll.style.display = anchoTabla > anchoContenedor ? 'block' : 'none';
+        }
+
+        let bloqueandoScroll = false;
+        topScroll.addEventListener('scroll', () => {
+            if (bloqueandoScroll) return;
+            bloqueandoScroll = true;
+            tableScroll.scrollLeft = topScroll.scrollLeft;
+            bloqueandoScroll = false;
+        });
+
+        tableScroll.addEventListener('scroll', () => {
+            if (bloqueandoScroll) return;
+            bloqueandoScroll = true;
+            topScroll.scrollLeft = tableScroll.scrollLeft;
+            bloqueandoScroll = false;
+        });
+
+        window.addEventListener('resize', sincronizarAnchoBarraSuperior);
 
         // --- Reloj Institucional en Vivo ---
         function actualizarReloj() {
@@ -399,11 +414,9 @@
             const minutosTotales = fechaObj.getHours() * 60 + fechaObj.getMinutes();
 
             if (dia === 6) {
-                // Sábado: Mario (7:00 AM - 2:00 PM), Wendy (2:00 PM - 6:00 PM)
                 if (minutosTotales >= 840 && minutosTotales <= 1080) return 'Wendy';
                 if (minutosTotales >= 420 && minutosTotales < 840) return 'Mario';
             } else if (dia >= 1 && dia <= 5) {
-                // Lunes a Viernes: Brenda (7:00 AM - 12:00 PM), Wendy (12:00 PM - 8:00 PM)
                 if (minutosTotales >= 720 && minutosTotales <= 1200) return 'Wendy';
                 if (minutosTotales >= 420 && minutosTotales < 720) return 'Brenda';
             }
@@ -505,23 +518,13 @@
 
         document.getElementById('btnFiltroHoy').addEventListener('click', () => {
             soloHoyActivo = true;
-            soloActivosCampus = false;
             filtroMes.value = '';
             marcarBotonActivo('btnFiltroHoy');
             actualizarTabla();
         });
 
-        document.getElementById('btnFiltroActivos').addEventListener('click', () => {
-            soloActivosCampus = true;
-            soloHoyActivo = false;
-            filtroMes.value = '';
-            marcarBotonActivo('btnFiltroActivos');
-            actualizarTabla();
-        });
-
         document.getElementById('btnFiltroMesActual').addEventListener('click', () => {
             soloHoyActivo = false;
-            soloActivosCampus = false;
             const ahora = new Date();
             filtroMes.value = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}`;
             marcarBotonActivo('btnFiltroMesActual');
@@ -530,7 +533,6 @@
 
         document.getElementById('btnLimpiar').addEventListener('click', () => {
             soloHoyActivo = false;
-            soloActivosCampus = false;
             filtroMes.value = '';
             filtroRecep.value = '';
             searchInput.value = '';
@@ -540,7 +542,6 @@
 
         filtroMes.addEventListener('change', () => {
             soloHoyActivo = false;
-            soloActivosCampus = false;
             marcarBotonActivo(null);
             actualizarTabla();
         });
@@ -566,8 +567,7 @@
                 const recepNormalizado = mapaNombres[registro.recepcionista] || registro.recepcionista || '';
 
                 if (soloHoyActivo && registro.fecha !== hoy) return false;
-                if (soloActivosCampus && registro.horaSalida) return false;
-                if (!soloHoyActivo && !soloActivosCampus && filtro && filtro !== mesRegistro) return false;
+                if (!soloHoyActivo && filtro && filtro !== mesRegistro) return false;
                 if (recepSeleccionado && recepNormalizado !== recepSeleccionado) return false;
 
                 const coincideTexto = !termino || [
@@ -580,14 +580,12 @@
                 return coincideTexto;
             });
 
-            // Estadísticas superiores
-            const registrosHoy = registros.filter(r => r.fecha === hoy);
-            document.getElementById('statActivos').textContent = registrosHoy.filter(r => !r.horaSalida).length;
-            document.getElementById('statHoy').textContent = registrosHoy.length;
+            document.getElementById('statHoy').textContent = registros.filter(r => r.fecha === hoy).length;
             document.getElementById('statTotal').textContent = registrosFiltradosActuales.length;
 
             if (registrosFiltradosActuales.length === 0) {
-                cuerpoTabla.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-slate-500">No se encontraron registros para los filtros seleccionados.</td></tr>`;
+                cuerpoTabla.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-500">No se encontraron registros para los filtros seleccionados.</td></tr>`;
+                sincronizarAnchoBarraSuperior();
                 return;
             }
 
@@ -597,29 +595,18 @@
 
                 const nombreRecep = mapaNombres[registro.recepcionista] || registro.recepcionista || 'N/A';
 
-                const celdaEstado = registro.horaSalida
-                    ? `<span class="inline-flex items-center gap-1.5 text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-1 rounded-md">
-                           <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                           Retirado • ${escapeHTML(registro.horaSalida)}
-                       </span>`
-                    : `<button type="button" data-id="${registro.id}" class="btn-salida inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-50 hover:bg-emerald-600 text-amber-700 hover:text-white border border-amber-200 hover:border-emerald-600 px-2.5 py-1 rounded-md transition" title="Registrar hora de salida ahora">
-                           <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                           Marcar Salida
-                       </button>`;
-
                 tr.innerHTML = `
                     <td class="py-3.5 px-4 whitespace-nowrap">
                         <div class="font-semibold text-slate-800">${escapeHTML(registro.dia)} • ${formatearFechaVisual(registro.fecha)}</div>
-                        <div class="text-xs text-slate-400">Ingreso: ${escapeHTML(registro.hora)} hrs</div>
+                        <div class="text-xs text-slate-400">${escapeHTML(registro.hora)} hrs</div>
                     </td>
                     <td class="py-3.5 px-4 font-semibold text-slate-800">${escapeHTML(registro.nombres)}</td>
-                    <td class="py-3.5 px-4 min-w-[240px]">
+                    <td class="py-3.5 px-4 min-w-[260px]">
                         <p class="text-slate-700 leading-relaxed whitespace-normal break-words">${escapeHTML(registro.consulta)}</p>
                     </td>
                     <td class="py-3.5 px-4 whitespace-nowrap">
                         <span class="inline-block text-xs font-medium bg-emerald-50 text-[#00553d] border border-emerald-200/70 px-2.5 py-1 rounded-md">${escapeHTML(registro.ubicacion)}</span>
                     </td>
-                    <td class="py-3.5 px-4 whitespace-nowrap">${celdaEstado}</td>
                     <td class="py-3.5 px-4 whitespace-nowrap font-medium text-slate-700">${escapeHTML(nombreRecep)}</td>
                     <td class="py-3.5 px-4 text-right whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
@@ -635,19 +622,7 @@
                 cuerpoTabla.appendChild(tr);
             });
 
-            // Eventos: Marcar Salida
-            document.querySelectorAll('.btn-salida').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = e.currentTarget.getAttribute('data-id');
-                    const horaSalida = getHoraActualHHMM();
-                    try {
-                        await updateDoc(doc(db, "visitas", id), { horaSalida });
-                        showToast(`Salida registrada a las ${horaSalida}`);
-                    } catch (err) {
-                        showToast('Error al registrar salida', true);
-                    }
-                });
-            });
+            sincronizarAnchoBarraSuperior();
 
             // Eventos: Abrir Modal Editar
             document.querySelectorAll('.btn-edit').forEach(btn => {
@@ -660,7 +635,6 @@
                     document.getElementById('editRecepcionista').value = mapaNombres[reg.recepcionista] || reg.recepcionista || 'Brenda';
                     document.getElementById('editFecha').value = reg.fecha || '';
                     document.getElementById('editHora').value = reg.hora || '';
-                    document.getElementById('editHoraSalida').value = reg.horaSalida || '';
                     document.getElementById('editNombres').value = reg.nombres || '';
                     document.getElementById('editConsulta').value = reg.consulta || '';
                     document.getElementById('editUbicacion').value = reg.ubicacion || '';
@@ -696,7 +670,6 @@
                 dia: obtenerNombreDia(fechaInput),
                 fecha: fechaInput,
                 hora: document.getElementById('hora').value,
-                horaSalida: '',
                 nombres: document.getElementById('nombres').value.trim(),
                 consulta: document.getElementById('consulta').value.trim(),
                 ubicacion: document.getElementById('ubicacion').value.trim(),
@@ -736,7 +709,6 @@
                     dia: obtenerNombreDia(fechaEditada),
                     fecha: fechaEditada,
                     hora: document.getElementById('editHora').value,
-                    horaSalida: document.getElementById('editHoraSalida').value || '',
                     nombres: document.getElementById('editNombres').value.trim(),
                     consulta: document.getElementById('editConsulta').value.trim(),
                     ubicacion: document.getElementById('editUbicacion').value.trim()
@@ -797,8 +769,7 @@
             const datosExcel = registrosFiltradosActuales.map(r => ({
                 "Día": r.dia || '',
                 "Fecha": formatearFechaVisual(r.fecha),
-                "Hora Ingreso": r.hora || '',
-                "Hora Salida": r.horaSalida || 'En campus',
+                "Hora": r.hora || '',
                 "Visitante": r.nombres || '',
                 "Consulta / Trámite": r.consulta || '',
                 "Ubicación / Destino": r.ubicacion || '',
@@ -809,8 +780,7 @@
             hoja['!cols'] = [
                 { wch: 12 }, // Día
                 { wch: 13 }, // Fecha
-                { wch: 14 }, // Ingreso
-                { wch: 14 }, // Salida
+                { wch: 10 }, // Hora
                 { wch: 28 }, // Visitante
                 { wch: 38 }, // Consulta
                 { wch: 24 }, // Ubicación
