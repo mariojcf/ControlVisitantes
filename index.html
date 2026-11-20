@@ -32,6 +32,8 @@
         });
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería SheetJS para exportación real a Excel (.xlsx) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -47,7 +49,7 @@
 
     <!-- Encabezado Institucional -->
     <header class="bg-[#00553d] text-white shadow-md sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div class="bg-white rounded-lg p-1.5 h-12 w-12 flex items-center justify-center shadow-sm shrink-0">
                     <img src="logo.png" alt="Logo UMES" class="h-full w-full object-contain">
@@ -57,17 +59,37 @@
                     <p class="text-emerald-200 text-xs font-medium">Universidad Mesoamericana • Recepción</p>
                 </div>
             </div>
-            <div id="statusCloud" class="hidden sm:flex items-center gap-2 bg-[#00422f] px-3.5 py-1.5 rounded-lg border border-emerald-700/50 text-xs font-medium text-emerald-100">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Sincronizado</span>
+
+            <div class="flex items-center gap-3">
+                <!-- Reloj Institucional en Vivo -->
+                <div class="hidden md:flex flex-col items-end text-right border-r border-emerald-700/60 pr-3">
+                    <span id="liveClock" class="text-sm font-bold tracking-wide text-white tabular-nums">--:--:--</span>
+                    <span id="liveDate" class="text-[11px] text-emerald-200 capitalize">Cargando fecha...</span>
+                </div>
+
+                <!-- Indicador Real de Conexión -->
+                <div id="statusCloud" class="flex items-center gap-2 bg-[#00422f] px-3.5 py-1.5 rounded-lg border border-emerald-700/50 text-xs font-medium text-emerald-100">
+                    <span id="statusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="statusText">Conectando...</span>
+                </div>
             </div>
         </div>
     </header>
 
     <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
 
-        <!-- Indicadores Rápidos -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Indicadores Rápidos (3 Tarjetas) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">En Campus Ahora</p>
+                    <p id="statActivos" class="text-2xl font-bold text-amber-600 mt-0.5">0</p>
+                </div>
+                <div class="h-10 w-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+            </div>
+
             <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Visitantes de Hoy</p>
@@ -80,7 +102,7 @@
 
             <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Registros Mostrados</p>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Registros Filtrados</p>
                     <p id="statTotal" class="text-2xl font-bold text-[#00553d] mt-0.5">0</p>
                 </div>
                 <div class="h-10 w-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
@@ -108,7 +130,7 @@
                         <select id="recepcionista" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
                             <option value="" disabled selected>Seleccione...</option>
                             <option value="Brenda">Brenda (L-V 7:00 AM - 3:00 PM)</option>
-                            <option value="Wendy">Wendy (L-V 12:45 PM - 8:00 PM)</option>
+                            <option value="Wendy">Wendy (L-V 12:00 PM - 8:00 PM | Sáb 2:00 PM - 6:00 PM)</option>
                             <option value="Mario">Mario (Sáb 7:00 AM - 2:00 PM)</option>
                         </select>
                     </div>
@@ -127,13 +149,39 @@
                     </div>
                     <div>
                         <label for="consulta" class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Consulta / Trámite *</label>
-                        <input type="text" id="consulta" placeholder="Ej. Entrega de papelería, reunión..." required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
+                        <input type="text" id="consulta" list="listaTramites" placeholder="Ej. Entrega de papelería, reunión..." required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
                     </div>
                     <div>
                         <label for="ubicacion" class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Ubicación / Destino *</label>
-                        <input type="text" id="ubicacion" placeholder="Ej. Contabilidad, Decanatura, Caja..." required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
+                        <input type="text" id="ubicacion" list="listaDestinos" placeholder="Ej. Contabilidad, Decanatura, Caja..." required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
                     </div>
                 </div>
+
+                <!-- Listas de Autocompletado Institucional -->
+                <datalist id="listaDestinos">
+                    <option value="Caja">
+                    <option value="Contabilidad">
+                    <option value="Registro Académico">
+                    <option value="Decanatura">
+                    <option value="Rectoría">
+                    <option value="Sistemas / IT">
+                    <option value="Recursos Humanos">
+                    <option value="Biblioteca">
+                    <option value="Bienestar Estudiantil">
+                    <option value="Clínica Médica">
+                    <option value="Dirección Administrativa">
+                    <option value="Coordinación de Carrera">
+                </datalist>
+
+                <datalist id="listaTramites">
+                    <option value="Información de carreras / Admisiones">
+                    <option value="Entrega de papelería / Documentos">
+                    <option value="Pago de colegiatura / Trámite en Caja">
+                    <option value="Reunión programada">
+                    <option value="Entrega de paquetería / Mensajería">
+                    <option value="Solicitud de certificación / Constancia">
+                    <option value="Soporte técnico / Proveedor">
+                </datalist>
 
                 <div class="pt-1 flex justify-end">
                     <button type="submit" id="btnGuardar" class="bg-[#00553d] hover:bg-[#00402e] active:scale-[0.99] text-white text-sm font-semibold py-2.5 px-6 rounded-lg shadow-sm transition flex items-center gap-2">
@@ -144,30 +192,52 @@
             </form>
         </section>
 
-        <!-- Controles de Búsqueda, Filtro y Exportación -->
-        <section class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-4 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
-                <!-- Buscador -->
-                <div class="relative flex-1 max-w-md">
-                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" id="searchInput" placeholder="Buscar visitante, trámite, destino o recepcionista..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d]">
+        <!-- Controles de Búsqueda, Filtros Rápidos y Exportación -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-4 space-y-3">
+            <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+                    <!-- Buscador -->
+                    <div class="relative flex-1 max-w-md">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="text" id="searchInput" placeholder="Buscar visitante, trámite o destino..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d]">
+                    </div>
+
+                    <!-- Filtro por Recepcionista -->
+                    <select id="filtroRecep" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d]">
+                        <option value="">Todos los turnos</option>
+                        <option value="Brenda">Turno: Brenda</option>
+                        <option value="Wendy">Turno: Wendy</option>
+                        <option value="Mario">Turno: Mario</option>
+                    </select>
+
+                    <!-- Filtro por Mes -->
+                    <input type="month" id="filtroMes" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d]">
                 </div>
 
-                <!-- Filtro por Mes -->
-                <div class="flex items-center gap-2">
-                    <input type="month" id="filtroMes" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d]">
-                    <button type="button" id="btnLimpiar" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium py-2 px-3.5 rounded-lg transition whitespace-nowrap">
-                        Mostrar Todos
-                    </button>
-                </div>
+                <button type="button" id="btnExportar" class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium py-2 px-4 rounded-lg shadow-sm flex items-center justify-center gap-2 transition whitespace-nowrap">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Exportar a Excel (.xlsx)
+                </button>
             </div>
 
-            <button type="button" id="btnExportar" class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium py-2 px-4 rounded-lg shadow-sm flex items-center justify-center gap-2 transition whitespace-nowrap">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Exportar a Excel
-            </button>
+            <!-- Botones de Filtro Rápido -->
+            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-1">Vista rápida:</span>
+                <button type="button" id="btnFiltroHoy" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-[#00553d] hover:border-emerald-200 transition">
+                    Solo Hoy
+                </button>
+                <button type="button" id="btnFiltroActivos" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200 transition">
+                    En Campus Ahora
+                </button>
+                <button type="button" id="btnFiltroMesActual" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-emerald-200 bg-emerald-50 text-[#00553d] transition">
+                    Mes Actual
+                </button>
+                <button type="button" id="btnLimpiar" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition">
+                    Mostrar Histórico Completo
+                </button>
+            </div>
         </section>
 
         <!-- Tabla de Registros -->
@@ -176,23 +246,76 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-[#00553d] text-white text-xs uppercase tracking-wider">
-                            <th class="py-3.5 px-4 font-semibold w-40 whitespace-nowrap">Día / Fecha / Hora</th>
-                            <th class="py-3.5 px-4 font-semibold w-52">Visitante</th>
+                            <th class="py-3.5 px-4 font-semibold w-44 whitespace-nowrap">Día / Fecha / Ingreso</th>
+                            <th class="py-3.5 px-4 font-semibold w-48">Visitante</th>
                             <th class="py-3.5 px-4 font-semibold">Consulta / Trámite</th>
-                            <th class="py-3.5 px-4 font-semibold w-48 whitespace-nowrap">Ubicación / Destino</th>
-                            <th class="py-3.5 px-4 font-semibold w-32 whitespace-nowrap">Recepcionista</th>
-                            <th class="py-3.5 px-4 font-semibold w-20 text-right whitespace-nowrap">Acción</th>
+                            <th class="py-3.5 px-4 font-semibold w-44 whitespace-nowrap">Ubicación / Destino</th>
+                            <th class="py-3.5 px-4 font-semibold w-44 whitespace-nowrap">Estado / Salida</th>
+                            <th class="py-3.5 px-4 font-semibold w-28 whitespace-nowrap">Recepción</th>
+                            <th class="py-3.5 px-4 font-semibold w-24 text-right whitespace-nowrap">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="cuerpoTabla" class="divide-y divide-slate-100 text-sm">
-                        <tr><td colspan="6" class="text-center py-10 text-slate-500">Cargando registros desde la nube...</td></tr>
+                        <tr><td colspan="7" class="text-center py-10 text-slate-500">Cargando registros desde la nube...</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
     </main>
 
-    <!-- Modal de confirmación para eliminar -->
+    <!-- Modal de Edición de Registro -->
+    <div id="editModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-[1px] justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-lg w-full border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-base font-bold text-[#00553d]">Editar Registro de Visita</h3>
+                <button type="button" id="btnCloseEdit" class="text-slate-400 hover:text-slate-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="formEditar" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Recepcionista</label>
+                        <select id="editRecepcionista" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:border-[#00553d]">
+                            <option value="Brenda">Brenda</option>
+                            <option value="Wendy">Wendy</option>
+                            <option value="Mario">Mario</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha</label>
+                        <input type="date" id="editFecha" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00553d]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Hora de Ingreso</label>
+                        <input type="time" id="editHora" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00553d]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Hora de Salida (Opcional)</label>
+                        <input type="time" id="editHoraSalida" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00553d]">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombres del Visitante</label>
+                    <input type="text" id="editNombres" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00553d]">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Consulta / Trámite</label>
+                    <input type="text" id="editConsulta" list="listaTramites" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00553d]">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Ubicación / Destino</label>
+                    <input type="text" id="editUbicacion" list="listaDestinos" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#00553d]">
+                </div>
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                    <button type="button" id="btnCancelEdit" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg text-sm transition">Cancelar</button>
+                    <button type="submit" id="btnSaveEdit" class="bg-[#00553d] hover:bg-[#00402e] text-white font-semibold py-2 px-5 rounded-lg text-sm transition">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación para Eliminar -->
     <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-[1px] justify-center items-center z-50 p-4">
         <div class="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full text-center border border-slate-200">
             <div class="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
@@ -215,7 +338,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, updateDoc, doc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBUCoF6RlDbGmNqo9n02lvuHDTdYeoa-s4",
@@ -234,28 +357,55 @@
         let registros = [];
         let registrosFiltradosActuales = [];
         let registroAEliminar = null;
+        let registroAEditar = null;
         let cambioManualRecep = false;
+        let soloHoyActivo = false;
+        let soloActivosCampus = false;
+
         const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const mapaNombres = {
+            'Recepcionista 1': 'Brenda',
+            'Recepcionista 2': 'Wendy',
+            'Recepcionista 3': 'Mario'
+        };
 
         const form = document.getElementById('formVisitantes');
         const cuerpoTabla = document.getElementById('cuerpoTabla');
         const filtroMes = document.getElementById('filtroMes');
+        const filtroRecep = document.getElementById('filtroRecep');
         const searchInput = document.getElementById('searchInput');
-        const btnLimpiar = document.getElementById('btnLimpiar');
         const btnExportar = document.getElementById('btnExportar');
         const btnGuardar = document.getElementById('btnGuardar');
         const selectRecepcionista = document.getElementById('recepcionista');
         const deleteModal = document.getElementById('deleteModal');
+        const editModal = document.getElementById('editModal');
 
+        // --- Reloj Institucional en Vivo ---
+        function actualizarReloj() {
+            const ahora = new Date();
+            document.getElementById('liveClock').textContent = ahora.toLocaleTimeString('es-GT', {
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+            });
+            document.getElementById('liveDate').textContent = ahora.toLocaleDateString('es-GT', {
+                weekday: 'long', day: 'numeric', month: 'short', year: 'numeric'
+            });
+        }
+        actualizarReloj();
+        setInterval(actualizarReloj, 1000);
+
+        // --- Detección de Turno por Horario ---
         function detectarRecepcionistaPorHorario(fechaObj = new Date()) {
             const dia = fechaObj.getDay();
             const minutosTotales = fechaObj.getHours() * 60 + fechaObj.getMinutes();
 
             if (dia === 6) {
-                if (minutosTotales >= 420 && minutosTotales <= 840) return 'Mario';
+                // Sábado: Mario (7:00 AM - 2:00 PM), Wendy (2:00 PM - 6:00 PM)
+                if (minutosTotales >= 840 && minutosTotales <= 1080) return 'Wendy';
+                if (minutosTotales >= 420 && minutosTotales < 840) return 'Mario';
             } else if (dia >= 1 && dia <= 5) {
-                if (minutosTotales >= 765 && minutosTotales <= 1200) return 'Wendy';
-                if (minutosTotales >= 420 && minutosTotales < 765) return 'Brenda';
+                // Lunes a Viernes: Brenda (7:00 AM - 12:00 PM), Wendy (12:00 PM - 8:00 PM)
+                if (minutosTotales >= 720 && minutosTotales <= 1200) return 'Wendy';
+                if (minutosTotales >= 420 && minutosTotales < 720) return 'Brenda';
             }
             return '';
         }
@@ -272,16 +422,19 @@
             setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
 
+        function getHoraActualHHMM() {
+            const ahora = new Date();
+            return `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
+        }
+
         function setFechaHoraActual() {
             const ahora = new Date();
             const yyyy = ahora.getFullYear();
             const mm = String(ahora.getMonth() + 1).padStart(2, '0');
             const dd = String(ahora.getDate()).padStart(2, '0');
-            const hh = String(ahora.getHours()).padStart(2, '0');
-            const min = String(ahora.getMinutes()).padStart(2, '0');
 
             document.getElementById('fecha').value = `${yyyy}-${mm}-${dd}`;
-            document.getElementById('hora').value = `${hh}:${min}`;
+            document.getElementById('hora').value = getHoraActualHHMM();
 
             if (!cambioManualRecep) {
                 const sugerido = detectarRecepcionistaPorHorario(ahora);
@@ -314,19 +467,93 @@
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
 
+        function escapeHTML(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // --- Suscripción en Tiempo Real + Indicador Real de Conexión ---
         const q = query(visitasRef, orderBy("timestamp", "desc"));
         onSnapshot(q, (querySnapshot) => {
+            document.getElementById('statusDot').className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+            document.getElementById('statusText').textContent = 'Sincronizado';
+
             registros = [];
             querySnapshot.forEach((documento) => {
                 registros.push({ id: documento.id, ...documento.data() });
             });
             actualizarTabla();
+        }, (error) => {
+            console.error("Error de sincronización:", error);
+            document.getElementById('statusDot').className = 'w-2 h-2 rounded-full bg-red-400';
+            document.getElementById('statusText').textContent = 'Sin conexión';
         });
 
+        // --- Estilos de Botones de Vista Rápida ---
+        function marcarBotonActivo(idActivo) {
+            document.querySelectorAll('.quick-filter').forEach(btn => {
+                btn.className = 'quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition';
+            });
+            const activo = document.getElementById(idActivo);
+            if (activo) {
+                activo.className = 'quick-filter text-xs font-semibold px-3 py-1.5 rounded-md border border-emerald-300 bg-emerald-50 text-[#00553d] transition';
+            }
+        }
+
+        document.getElementById('btnFiltroHoy').addEventListener('click', () => {
+            soloHoyActivo = true;
+            soloActivosCampus = false;
+            filtroMes.value = '';
+            marcarBotonActivo('btnFiltroHoy');
+            actualizarTabla();
+        });
+
+        document.getElementById('btnFiltroActivos').addEventListener('click', () => {
+            soloActivosCampus = true;
+            soloHoyActivo = false;
+            filtroMes.value = '';
+            marcarBotonActivo('btnFiltroActivos');
+            actualizarTabla();
+        });
+
+        document.getElementById('btnFiltroMesActual').addEventListener('click', () => {
+            soloHoyActivo = false;
+            soloActivosCampus = false;
+            const ahora = new Date();
+            filtroMes.value = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}`;
+            marcarBotonActivo('btnFiltroMesActual');
+            actualizarTabla();
+        });
+
+        document.getElementById('btnLimpiar').addEventListener('click', () => {
+            soloHoyActivo = false;
+            soloActivosCampus = false;
+            filtroMes.value = '';
+            filtroRecep.value = '';
+            searchInput.value = '';
+            marcarBotonActivo('btnLimpiar');
+            actualizarTabla();
+        });
+
+        filtroMes.addEventListener('change', () => {
+            soloHoyActivo = false;
+            soloActivosCampus = false;
+            marcarBotonActivo(null);
+            actualizarTabla();
+        });
+        filtroRecep.addEventListener('change', actualizarTabla);
+        searchInput.addEventListener('input', actualizarTabla);
+
+        // --- Renderizado de Tabla ---
         function actualizarTabla() {
             cuerpoTabla.innerHTML = '';
             const filtro = filtroMes.value;
+            const recepSeleccionado = filtroRecep.value;
             const termino = searchInput.value.toLowerCase().trim();
+            const hoy = getTodayISO();
 
             const registrosOrdenados = [...registros].sort((a, b) => {
                 const fechaA = new Date(`${a.fecha}T${a.hora}`);
@@ -334,16 +561,15 @@
                 return fechaB - fechaA;
             });
 
-            const mapaNombres = {
-                'Recepcionista 1': 'Brenda',
-                'Recepcionista 2': 'Wendy',
-                'Recepcionista 3': 'Mario'
-            };
-
             registrosFiltradosActuales = registrosOrdenados.filter((registro) => {
                 const mesRegistro = (registro.fecha || '').substring(0, 7);
-                const coincideMes = !filtro || filtro === mesRegistro;
                 const recepNormalizado = mapaNombres[registro.recepcionista] || registro.recepcionista || '';
+
+                if (soloHoyActivo && registro.fecha !== hoy) return false;
+                if (soloActivosCampus && registro.horaSalida) return false;
+                if (!soloHoyActivo && !soloActivosCampus && filtro && filtro !== mesRegistro) return false;
+                if (recepSeleccionado && recepNormalizado !== recepSeleccionado) return false;
+
                 const coincideTexto = !termino || [
                     registro.nombres,
                     registro.consulta,
@@ -351,15 +577,17 @@
                     recepNormalizado
                 ].some(campo => (campo || '').toLowerCase().includes(termino));
 
-                return coincideMes && coincideTexto;
+                return coincideTexto;
             });
 
-            const hoy = getTodayISO();
-            document.getElementById('statHoy').textContent = registros.filter(r => r.fecha === hoy).length;
+            // Estadísticas superiores
+            const registrosHoy = registros.filter(r => r.fecha === hoy);
+            document.getElementById('statActivos').textContent = registrosHoy.filter(r => !r.horaSalida).length;
+            document.getElementById('statHoy').textContent = registrosHoy.length;
             document.getElementById('statTotal').textContent = registrosFiltradosActuales.length;
 
             if (registrosFiltradosActuales.length === 0) {
-                cuerpoTabla.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-500">No se encontraron registros para los filtros seleccionados.</td></tr>`;
+                cuerpoTabla.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-slate-500">No se encontraron registros para los filtros seleccionados.</td></tr>`;
                 return;
             }
 
@@ -369,28 +597,80 @@
 
                 const nombreRecep = mapaNombres[registro.recepcionista] || registro.recepcionista || 'N/A';
 
+                const celdaEstado = registro.horaSalida
+                    ? `<span class="inline-flex items-center gap-1.5 text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-1 rounded-md">
+                           <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                           Retirado • ${escapeHTML(registro.horaSalida)}
+                       </span>`
+                    : `<button type="button" data-id="${registro.id}" class="btn-salida inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-50 hover:bg-emerald-600 text-amber-700 hover:text-white border border-amber-200 hover:border-emerald-600 px-2.5 py-1 rounded-md transition" title="Registrar hora de salida ahora">
+                           <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                           Marcar Salida
+                       </button>`;
+
                 tr.innerHTML = `
                     <td class="py-3.5 px-4 whitespace-nowrap">
-                        <div class="font-semibold text-slate-800">${registro.dia || ''} • ${formatearFechaVisual(registro.fecha)}</div>
-                        <div class="text-xs text-slate-400">${registro.hora} hrs</div>
+                        <div class="font-semibold text-slate-800">${escapeHTML(registro.dia)} • ${formatearFechaVisual(registro.fecha)}</div>
+                        <div class="text-xs text-slate-400">Ingreso: ${escapeHTML(registro.hora)} hrs</div>
                     </td>
-                    <td class="py-3.5 px-4 font-semibold text-slate-800">${registro.nombres}</td>
-                    <td class="py-3.5 px-4 min-w-[280px]">
-                        <p class="text-slate-700 leading-relaxed whitespace-normal break-words">${registro.consulta}</p>
+                    <td class="py-3.5 px-4 font-semibold text-slate-800">${escapeHTML(registro.nombres)}</td>
+                    <td class="py-3.5 px-4 min-w-[240px]">
+                        <p class="text-slate-700 leading-relaxed whitespace-normal break-words">${escapeHTML(registro.consulta)}</p>
                     </td>
                     <td class="py-3.5 px-4 whitespace-nowrap">
-                        <span class="inline-block text-xs font-medium bg-emerald-50 text-[#00553d] border border-emerald-200/70 px-2.5 py-1 rounded-md">${registro.ubicacion}</span>
+                        <span class="inline-block text-xs font-medium bg-emerald-50 text-[#00553d] border border-emerald-200/70 px-2.5 py-1 rounded-md">${escapeHTML(registro.ubicacion)}</span>
                     </td>
-                    <td class="py-3.5 px-4 whitespace-nowrap font-medium text-slate-700">${nombreRecep}</td>
+                    <td class="py-3.5 px-4 whitespace-nowrap">${celdaEstado}</td>
+                    <td class="py-3.5 px-4 whitespace-nowrap font-medium text-slate-700">${escapeHTML(nombreRecep)}</td>
                     <td class="py-3.5 px-4 text-right whitespace-nowrap">
-                        <button class="btn-delete text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition" data-id="${registro.id}" title="Eliminar registro">
-                            <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        </button>
+                        <div class="inline-flex items-center gap-1">
+                            <button type="button" class="btn-edit text-slate-400 hover:text-[#00553d] p-1.5 rounded-lg hover:bg-emerald-50 transition" data-id="${registro.id}" title="Editar registro">
+                                <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button type="button" class="btn-delete text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition" data-id="${registro.id}" title="Eliminar registro">
+                                <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
                     </td>
                 `;
                 cuerpoTabla.appendChild(tr);
             });
 
+            // Eventos: Marcar Salida
+            document.querySelectorAll('.btn-salida').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = e.currentTarget.getAttribute('data-id');
+                    const horaSalida = getHoraActualHHMM();
+                    try {
+                        await updateDoc(doc(db, "visitas", id), { horaSalida });
+                        showToast(`Salida registrada a las ${horaSalida}`);
+                    } catch (err) {
+                        showToast('Error al registrar salida', true);
+                    }
+                });
+            });
+
+            // Eventos: Abrir Modal Editar
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.getAttribute('data-id');
+                    const reg = registros.find(r => r.id === id);
+                    if (!reg) return;
+
+                    registroAEditar = id;
+                    document.getElementById('editRecepcionista').value = mapaNombres[reg.recepcionista] || reg.recepcionista || 'Brenda';
+                    document.getElementById('editFecha').value = reg.fecha || '';
+                    document.getElementById('editHora').value = reg.hora || '';
+                    document.getElementById('editHoraSalida').value = reg.horaSalida || '';
+                    document.getElementById('editNombres').value = reg.nombres || '';
+                    document.getElementById('editConsulta').value = reg.consulta || '';
+                    document.getElementById('editUbicacion').value = reg.ubicacion || '';
+
+                    editModal.classList.remove('hidden');
+                    editModal.classList.add('flex');
+                });
+            });
+
+            // Eventos: Abrir Modal Eliminar
             document.querySelectorAll('.btn-delete').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = e.currentTarget.getAttribute('data-id');
@@ -403,6 +683,7 @@
             });
         }
 
+        // --- Guardar Nuevo Registro ---
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             btnGuardar.disabled = true;
@@ -415,6 +696,7 @@
                 dia: obtenerNombreDia(fechaInput),
                 fecha: fechaInput,
                 hora: document.getElementById('hora').value,
+                horaSalida: '',
                 nombres: document.getElementById('nombres').value.trim(),
                 consulta: document.getElementById('consulta').value.trim(),
                 ubicacion: document.getElementById('ubicacion').value.trim(),
@@ -437,6 +719,48 @@
             }
         });
 
+        // --- Guardar Edición ---
+        document.getElementById('formEditar').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!registroAEditar) return;
+
+            const btnSaveEdit = document.getElementById('btnSaveEdit');
+            btnSaveEdit.disabled = true;
+            btnSaveEdit.textContent = 'Guardando...';
+
+            const fechaEditada = document.getElementById('editFecha').value;
+
+            try {
+                await updateDoc(doc(db, "visitas", registroAEditar), {
+                    recepcionista: document.getElementById('editRecepcionista').value,
+                    dia: obtenerNombreDia(fechaEditada),
+                    fecha: fechaEditada,
+                    hora: document.getElementById('editHora').value,
+                    horaSalida: document.getElementById('editHoraSalida').value || '',
+                    nombres: document.getElementById('editNombres').value.trim(),
+                    consulta: document.getElementById('editConsulta').value.trim(),
+                    ubicacion: document.getElementById('editUbicacion').value.trim()
+                });
+                cerrarModalEdicion();
+                showToast('Registro actualizado correctamente');
+            } catch (err) {
+                console.error(err);
+                showToast('Error al actualizar registro', true);
+            } finally {
+                btnSaveEdit.disabled = false;
+                btnSaveEdit.textContent = 'Guardar Cambios';
+            }
+        });
+
+        function cerrarModalEdicion() {
+            registroAEditar = null;
+            editModal.classList.add('hidden');
+            editModal.classList.remove('flex');
+        }
+        document.getElementById('btnCancelEdit').addEventListener('click', cerrarModalEdicion);
+        document.getElementById('btnCloseEdit').addEventListener('click', cerrarModalEdicion);
+
+        // --- Eliminar Registro ---
         document.getElementById('btnCancelDelete').addEventListener('click', () => {
             registroAEliminar = null;
             deleteModal.classList.add('hidden');
@@ -463,51 +787,42 @@
             }
         });
 
-        filtroMes.addEventListener('change', actualizarTabla);
-        searchInput.addEventListener('input', actualizarTabla);
-        btnLimpiar.addEventListener('click', () => {
-            filtroMes.value = '';
-            searchInput.value = '';
-            actualizarTabla();
-        });
-
+        // --- Exportar a Excel Real (.xlsx) con SheetJS ---
         btnExportar.addEventListener('click', function() {
             if (registrosFiltradosActuales.length === 0) {
                 showToast('No hay registros para exportar', true);
                 return;
             }
 
-            const mapaNombres = {
-                'Recepcionista 1': 'Brenda',
-                'Recepcionista 2': 'Wendy',
-                'Recepcionista 3': 'Mario'
-            };
+            const datosExcel = registrosFiltradosActuales.map(r => ({
+                "Día": r.dia || '',
+                "Fecha": formatearFechaVisual(r.fecha),
+                "Hora Ingreso": r.hora || '',
+                "Hora Salida": r.horaSalida || 'En campus',
+                "Visitante": r.nombres || '',
+                "Consulta / Trámite": r.consulta || '',
+                "Ubicación / Destino": r.ubicacion || '',
+                "Recepcionista": mapaNombres[r.recepcionista] || r.recepcionista || 'N/A'
+            }));
 
-            let csvContent = "Día,Fecha,Hora,Visitante,Consulta / Trámite,Ubicación / Destino,Recepcionista\n";
+            const hoja = XLSX.utils.json_to_sheet(datosExcel);
+            hoja['!cols'] = [
+                { wch: 12 }, // Día
+                { wch: 13 }, // Fecha
+                { wch: 14 }, // Ingreso
+                { wch: 14 }, // Salida
+                { wch: 28 }, // Visitante
+                { wch: 38 }, // Consulta
+                { wch: 24 }, // Ubicación
+                { wch: 16 }  // Recepcionista
+            ];
 
-            registrosFiltradosActuales.forEach(r => {
-                const recep = mapaNombres[r.recepcionista] || r.recepcionista || 'N/A';
-                const fila = [
-                    r.dia || '',
-                    formatearFechaVisual(r.fecha),
-                    r.hora || '',
-                    `"${(r.nombres || '').replace(/"/g, '""')}"`,
-                    `"${(r.consulta || '').replace(/"/g, '""')}"`,
-                    `"${(r.ubicacion || '').replace(/"/g, '""')}"`,
-                    `"${recep.replace(/"/g, '""')}"`
-                ];
-                csvContent += fila.join(",") + "\n";
-            });
+            const libro = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(libro, hoja, "Control Visitantes");
 
-            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const filtro = filtroMes.value;
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Reporte_Visitas_UMES_${filtro || 'Historico'}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast('Reporte exportado a Excel');
+            const sufijo = soloHoyActivo ? `Hoy_${getTodayISO()}` : (filtroMes.value || 'Historico');
+            XLSX.writeFile(libro, `Reporte_Visitas_UMES_${sufijo}.xlsx`);
+            showToast('Archivo Excel (.xlsx) descargado');
         });
     </script>
 </body>
