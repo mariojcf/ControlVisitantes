@@ -42,12 +42,42 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Estilos exclusivos para Impresión / Exportar PDF Oficial */
+        @media print {
+            body { background: #ffffff !important; color: #000000 !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            main { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            .table-wrapper { max-height: none !important; overflow: visible !important; border: none !important; box-shadow: none !important; }
+            table { width: 100% !important; font-size: 11px !important; border-collapse: collapse !important; }
+            th { background-color: #00553d !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 6px 8px !important; }
+            td { padding: 6px 8px !important; border-bottom: 1px solid #cbd5e1 !important; }
+            .col-acciones, .avatar-badge { display: none !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Encabezado Institucional -->
-    <header class="bg-[#00553d] text-white shadow-md sticky top-0 z-30">
+    <!-- Encabezado Exclusivo para Impresión PDF -->
+    <div class="hidden print-only border-b-2 border-[#00553d] pb-4 mb-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="logo.png" alt="Logo UMES" class="h-14 w-14 object-contain">
+                <div>
+                    <h1 class="text-lg font-bold text-[#00553d]">Universidad Mesoamericana</h1>
+                    <p class="text-xs text-slate-600 font-semibold">Reporte Oficial de Control y Registro de Visitantes • Recepción</p>
+                </div>
+            </div>
+            <div class="text-right text-xs text-slate-600">
+                <p id="printFiltroLabel" class="font-semibold text-slate-800">Periodo: Mes Actual</p>
+                <p id="printFechaGen">Generado: --/--/----</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Encabezado Institucional Web -->
+    <header class="no-print bg-[#00553d] text-white shadow-md sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div class="bg-white rounded-lg p-1.5 h-12 w-12 flex items-center justify-center shadow-sm shrink-0">
@@ -75,10 +105,10 @@
         </div>
     </header>
 
-    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5 flex-1">
 
         <!-- Indicadores Rápidos -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="no-print grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Visitantes de Hoy</p>
@@ -91,8 +121,11 @@
 
             <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Registros Mostrados</p>
-                    <p id="statTotal" class="text-2xl font-bold text-[#00553d] mt-0.5">0</p>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Registros en Vista Actual</p>
+                    <div class="flex items-baseline gap-3 mt-0.5">
+                        <p id="statTotal" class="text-2xl font-bold text-[#00553d]">0</p>
+                        <span id="desgloseTurnos" class="text-xs text-slate-500 font-medium"></span>
+                    </div>
                 </div>
                 <div class="h-10 w-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -101,8 +134,8 @@
         </div>
 
         <!-- Formulario de Ingreso -->
-        <section class="bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <section class="no-print bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
+            <div class="px-6 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <h2 class="text-[#00553d] font-bold text-base flex items-center gap-2">
                     <span class="w-1.5 h-5 bg-[#00553d] rounded-full"></span>
                     Ingreso de Nueva Visita
@@ -112,7 +145,7 @@
                 </button>
             </div>
 
-            <form id="formVisitantes" class="p-6 space-y-5">
+            <form id="formVisitantes" class="p-5 space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
                         <label for="recepcionista" class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Recepcionista en turno *</label>
@@ -138,39 +171,17 @@
                     </div>
                     <div>
                         <label for="consulta" class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Consulta / Trámite *</label>
-                        <input type="text" id="consulta" list="listaTramites" placeholder="Ej. Entrega de papelería, reunión..." required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
+                        <input type="text" id="consulta" list="listaTramites" placeholder="Ej. Información de carreras, papelería..." required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
                     </div>
                     <div>
                         <label for="ubicacion" class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Ubicación / Destino *</label>
-                        <input type="text" id="ubicacion" list="listaDestinos" placeholder="Ej. Contabilidad, Decanatura, Caja..." required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
+                        <input type="text" id="ubicacion" list="listaDestinos" placeholder="Ej. Contact Center, Caja, Decanatura..." required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d] transition">
                     </div>
                 </div>
 
-                <!-- Listas de Autocompletado Institucional -->
-                <datalist id="listaDestinos">
-                    <option value="Caja">
-                    <option value="Contabilidad">
-                    <option value="Registro Académico">
-                    <option value="Decanatura">
-                    <option value="Rectoría">
-                    <option value="Sistemas / IT">
-                    <option value="Recursos Humanos">
-                    <option value="Biblioteca">
-                    <option value="Bienestar Estudiantil">
-                    <option value="Clínica Médica">
-                    <option value="Dirección Administrativa">
-                    <option value="Coordinación de Carrera">
-                </datalist>
-
-                <datalist id="listaTramites">
-                    <option value="Información de carreras / Admisiones">
-                    <option value="Entrega de papelería / Documentos">
-                    <option value="Pago de colegiatura / Trámite en Caja">
-                    <option value="Reunión programada">
-                    <option value="Entrega de paquetería / Mensajería">
-                    <option value="Solicitud de certificación / Constancia">
-                    <option value="Soporte técnico / Proveedor">
-                </datalist>
+                <!-- Listas Dinámicas (Se alimentan automáticamente con el historial + áreas base) -->
+                <datalist id="listaDestinos"></datalist>
+                <datalist id="listaTramites"></datalist>
 
                 <div class="pt-1 flex justify-end">
                     <button type="submit" id="btnGuardar" class="bg-[#00553d] hover:bg-[#00402e] active:scale-[0.99] text-white text-sm font-semibold py-2.5 px-6 rounded-lg shadow-sm transition flex items-center gap-2">
@@ -182,9 +193,9 @@
         </section>
 
         <!-- Controles de Búsqueda, Filtros Rápidos y Exportación -->
-        <section class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-4 space-y-3">
-            <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3">
-                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+        <section class="no-print bg-white rounded-xl shadow-sm border border-slate-200/80 p-4 space-y-3">
+            <div class="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-3">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
                     <!-- Buscador -->
                     <div class="relative flex-1 max-w-md">
                         <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -203,52 +214,82 @@
                     <input type="month" id="filtroMes" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#00553d]/20 focus:border-[#00553d]">
                 </div>
 
-                <button type="button" id="btnExportar" class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium py-2 px-4 rounded-lg shadow-sm flex items-center justify-center gap-2 transition whitespace-nowrap">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    Exportar a Excel (.xlsx)
-                </button>
+                <!-- Botones de Exportación -->
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnImprimir" class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium py-2 px-3.5 rounded-lg shadow-sm flex items-center justify-center gap-2 transition whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        Imprimir / PDF
+                    </button>
+
+                    <button type="button" id="btnExportar" class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium py-2 px-4 rounded-lg shadow-sm flex items-center justify-center gap-2 transition whitespace-nowrap">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Excel (.xlsx)
+                    </button>
+                </div>
             </div>
 
-            <!-- Botones de Filtro Rápido -->
-            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
-                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-1">Vista rápida:</span>
-                <button type="button" id="btnFiltroHoy" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-[#00553d] hover:border-emerald-200 transition">
-                    Solo Hoy
-                </button>
-                <button type="button" id="btnFiltroMesActual" class="quick-filter text-xs font-semibold px-3 py-1.5 rounded-md border border-emerald-300 bg-emerald-50 text-[#00553d] transition">
-                    Mes Actual
-                </button>
-                <button type="button" id="btnLimpiar" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition">
-                    Mostrar Histórico Completo
-                </button>
+            <!-- Botones de Filtro Rápido + Selector de Paginación -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-slate-100">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-1">Vista rápida:</span>
+                    <button type="button" id="btnFiltroHoy" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-[#00553d] hover:border-emerald-200 transition">
+                        Solo Hoy
+                    </button>
+                    <button type="button" id="btnFiltroMesActual" class="quick-filter text-xs font-semibold px-3 py-1.5 rounded-md border border-emerald-300 bg-emerald-50 text-[#00553d] transition">
+                        Mes Actual
+                    </button>
+                    <button type="button" id="btnLimpiar" class="quick-filter text-xs font-medium px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition">
+                        Histórico Completo
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs text-slate-600">
+                    <label for="limiteFilas" class="font-medium">Mostrar:</label>
+                    <select id="limiteFilas" class="border border-slate-300 rounded-md px-2 py-1 text-xs bg-white focus:outline-none focus:border-[#00553d]">
+                        <option value="25">25 filas</option>
+                        <option value="50" selected>50 filas</option>
+                        <option value="100">100 filas</option>
+                        <option value="0">Todas</option>
+                    </select>
+                </div>
             </div>
         </section>
 
-        <!-- Tabla de Registros con Barra Horizontal Superior -->
-        <section class="bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
+        <!-- Tabla de Registros con Barra Horizontal Superior y Cabecera Fija -->
+        <section class="table-wrapper bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
             <!-- Barra de desplazamiento horizontal superior sincronizada -->
-            <div id="topScroll" class="overflow-x-auto border-b border-slate-200 bg-slate-50">
+            <div id="topScroll" class="no-print overflow-x-auto border-b border-slate-200 bg-slate-50">
                 <div id="topScrollSpacer" class="h-1"></div>
             </div>
 
-            <div id="tableScroll" class="overflow-x-auto">
+            <div id="tableScroll" class="overflow-x-auto max-h-[68vh]">
                 <table id="tablaVisitantes" class="w-full text-left border-collapse">
-                    <thead>
+                    <thead class="sticky top-0 z-10 shadow-sm">
                         <tr class="bg-[#00553d] text-white text-xs uppercase tracking-wider">
                             <th class="py-3.5 px-4 font-semibold w-44 whitespace-nowrap">Día / Fecha / Hora</th>
-                            <th class="py-3.5 px-4 font-semibold w-48">Visitante</th>
+                            <th class="py-3.5 px-4 font-semibold w-56">Visitante</th>
                             <th class="py-3.5 px-4 font-semibold">Consulta / Trámite</th>
-                            <th class="py-3.5 px-4 font-semibold w-44 whitespace-nowrap">Ubicación / Destino</th>
+                            <th class="py-3.5 px-4 font-semibold w-48 whitespace-nowrap">Ubicación / Destino</th>
                             <th class="py-3.5 px-4 font-semibold w-28 whitespace-nowrap">Recepción</th>
-                            <th class="py-3.5 px-4 font-semibold w-24 text-right whitespace-nowrap">Acciones</th>
+                            <th class="col-acciones py-3.5 px-4 font-semibold w-24 text-right whitespace-nowrap">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="cuerpoTabla" class="divide-y divide-slate-100 text-sm">
                         <tr><td colspan="6" class="text-center py-10 text-slate-500">Cargando registros desde la nube...</td></tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pie de Paginación -->
+            <div id="paginacionFooter" class="no-print hidden px-4 py-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-600">
+                <span id="infoPaginacion">Mostrando 0 de 0 registros</span>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" id="btnPrevPage" class="px-3 py-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none font-medium transition">Anterior</button>
+                    <span id="indicadorPagina" class="px-2 font-semibold text-slate-700">Página 1</span>
+                    <button type="button" id="btnNextPage" class="px-3 py-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none font-medium transition">Siguiente</button>
+                </div>
             </div>
         </section>
     </main>
@@ -301,14 +342,14 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmación para Eliminar -->
+    <!-- Modal de Confirmación Detallada para Eliminar -->
     <div id="deleteModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-[1px] justify-center items-center z-50 p-4">
         <div class="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full text-center border border-slate-200">
             <div class="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </div>
             <h3 class="text-lg font-bold text-slate-800">Eliminar Registro</h3>
-            <p class="text-sm text-slate-500 mt-1.5">¿Estás seguro de eliminar este visitante? Se borrará para todos los recepcionistas.</p>
+            <p id="deleteDetalleTexto" class="text-sm text-slate-600 mt-2">¿Estás seguro de eliminar este visitante? Se borrará para todos los recepcionistas.</p>
             <div class="flex justify-center gap-3 mt-5">
                 <button type="button" id="btnCancelDelete" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg text-sm transition">Cancelar</button>
                 <button type="button" id="btnConfirmDelete" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition">Sí, Eliminar</button>
@@ -317,7 +358,7 @@
     </div>
 
     <!-- Toast de Notificación -->
-    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 z-50 bg-slate-900 text-white text-sm px-4 py-3 rounded-lg shadow-lg flex items-center gap-2.5">
+    <div id="toast" class="no-print fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 z-50 bg-slate-900 text-white text-sm px-4 py-3 rounded-lg shadow-lg flex items-center gap-2.5">
         <span id="toastIcon" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
         <span id="toastMsg">Listo</span>
     </div>
@@ -346,6 +387,7 @@
         let registroAEditar = null;
         let cambioManualRecep = false;
         let soloHoyActivo = false;
+        let paginaActual = 1;
 
         const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         const mapaNombres = {
@@ -354,16 +396,50 @@
             'Recepcionista 3': 'Mario'
         };
 
+        const destinosBase = [
+            "Contact Center", "Caja", "Contabilidad", "Registro Académico",
+            "Decanatura", "Rectoría", "Sistemas / IT", "Recursos Humanos",
+            "Biblioteca", "Bienestar Estudiantil", "Clínica Médica", "Dirección Administrativa"
+        ];
+
+        const tramitesBase = [
+            "Información de carreras", "Entrega de papelería / Documentos",
+            "Pago de colegiatura / Trámite en Caja", "Reunión programada",
+            "Entrega de correspondencia / Paquetería", "Solicitud de certificación / Constancia",
+            "Soporte técnico / Proveedor"
+        ];
+
         const form = document.getElementById('formVisitantes');
         const cuerpoTabla = document.getElementById('cuerpoTabla');
         const filtroMes = document.getElementById('filtroMes');
         const filtroRecep = document.getElementById('filtroRecep');
         const searchInput = document.getElementById('searchInput');
+        const limiteFilasSelect = document.getElementById('limiteFilas');
         const btnExportar = document.getElementById('btnExportar');
+        const btnImprimir = document.getElementById('btnImprimir');
         const btnGuardar = document.getElementById('btnGuardar');
         const selectRecepcionista = document.getElementById('recepcionista');
         const deleteModal = document.getElementById('deleteModal');
         const editModal = document.getElementById('editModal');
+
+        // --- Autocompletado Dinámico desde Historial + Sugerencias Base ---
+        function actualizarDatalistsDinamicos() {
+            const setDestinos = new Set(destinosBase);
+            const setTramites = new Set(tramitesBase);
+
+            registros.forEach(r => {
+                if (r.ubicacion && r.ubicacion.trim().length > 2) setDestinos.add(r.ubicacion.trim());
+                if (r.consulta && r.consulta.trim().length > 3) setTramites.add(r.consulta.trim());
+            });
+
+            document.getElementById('listaDestinos').innerHTML = Array.from(setDestinos)
+                .sort((a, b) => a.localeCompare(b))
+                .map(item => `<option value="${escapeHTML(item)}">`).join('');
+
+            document.getElementById('listaTramites').innerHTML = Array.from(setTramites)
+                .sort((a, b) => a.localeCompare(b))
+                .map(item => `<option value="${escapeHTML(item)}">`).join('');
+        }
 
         // --- Sincronización de Barra Horizontal Superior e Inferior ---
         const topScroll = document.getElementById('topScroll');
@@ -488,6 +564,27 @@
                 .replace(/"/g, '&quot;');
         }
 
+        function obtenerIniciales(nombre) {
+            const partes = String(nombre || '').trim().split(/\s+/).filter(Boolean);
+            if (partes.length === 0) return 'V';
+            if (partes.length === 1) return partes[0].substring(0, 2).toUpperCase();
+            return (partes[0][0] + partes[1][0]).toUpperCase();
+        }
+
+        function obtenerEstiloDestino(destino) {
+            const d = String(destino || '').toLowerCase();
+            if (d.includes('contact') || d.includes('admision') || d.includes('info')) {
+                return 'bg-sky-50 text-sky-800 border-sky-200/80';
+            }
+            if (d.includes('caja') || d.includes('contab')) {
+                return 'bg-amber-50 text-amber-800 border-amber-200/80';
+            }
+            if (d.includes('rector') || d.includes('decan') || d.includes('lic') || d.includes('ing')) {
+                return 'bg-purple-50 text-purple-800 border-purple-200/80';
+            }
+            return 'bg-emerald-50 text-[#00553d] border-emerald-200/70';
+        }
+
         // --- Suscripción en Tiempo Real + Indicador Real de Conexión ---
         const q = query(visitasRef, orderBy("timestamp", "desc"));
         onSnapshot(q, (querySnapshot) => {
@@ -498,6 +595,7 @@
             querySnapshot.forEach((documento) => {
                 registros.push({ id: documento.id, ...documento.data() });
             });
+            actualizarDatalistsDinamicos();
             actualizarTabla();
         }, (error) => {
             console.error("Error de sincronización:", error);
@@ -519,6 +617,7 @@
         document.getElementById('btnFiltroHoy').addEventListener('click', () => {
             soloHoyActivo = true;
             filtroMes.value = '';
+            paginaActual = 1;
             marcarBotonActivo('btnFiltroHoy');
             actualizarTabla();
         });
@@ -527,6 +626,7 @@
             soloHoyActivo = false;
             const ahora = new Date();
             filtroMes.value = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}`;
+            paginaActual = 1;
             marcarBotonActivo('btnFiltroMesActual');
             actualizarTabla();
         });
@@ -536,19 +636,38 @@
             filtroMes.value = '';
             filtroRecep.value = '';
             searchInput.value = '';
+            paginaActual = 1;
             marcarBotonActivo('btnLimpiar');
             actualizarTabla();
         });
 
         filtroMes.addEventListener('change', () => {
             soloHoyActivo = false;
+            paginaActual = 1;
             marcarBotonActivo(null);
             actualizarTabla();
         });
-        filtroRecep.addEventListener('change', actualizarTabla);
-        searchInput.addEventListener('input', actualizarTabla);
+        filtroRecep.addEventListener('change', () => { paginaActual = 1; actualizarTabla(); });
+        searchInput.addEventListener('input', () => { paginaActual = 1; actualizarTabla(); });
+        limiteFilasSelect.addEventListener('change', () => { paginaActual = 1; actualizarTabla(); });
 
-        // --- Renderizado de Tabla ---
+        document.getElementById('btnPrevPage').addEventListener('click', () => {
+            if (paginaActual > 1) {
+                paginaActual--;
+                actualizarTabla();
+            }
+        });
+
+        document.getElementById('btnNextPage').addEventListener('click', () => {
+            const limite = parseInt(limiteFilasSelect.value, 10);
+            const totalPaginas = limite > 0 ? Math.ceil(registrosFiltradosActuales.length / limite) : 1;
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                actualizarTabla();
+            }
+        });
+
+        // --- Renderizado de Tabla con Paginación y Desglose ---
         function actualizarTabla() {
             cuerpoTabla.innerHTML = '';
             const filtro = filtroMes.value;
@@ -580,35 +699,76 @@
                 return coincideTexto;
             });
 
+            // Estadísticas y desglose por recepcionista
             document.getElementById('statHoy').textContent = registros.filter(r => r.fecha === hoy).length;
             document.getElementById('statTotal').textContent = registrosFiltradosActuales.length;
 
-            if (registrosFiltradosActuales.length === 0) {
+            const conteoTurnos = { Brenda: 0, Wendy: 0, Mario: 0 };
+            registrosFiltradosActuales.forEach(r => {
+                const nom = mapaNombres[r.recepcionista] || r.recepcionista;
+                if (conteoTurnos[nom] !== undefined) conteoTurnos[nom]++;
+            });
+            document.getElementById('desgloseTurnos').textContent =
+                `Brenda: ${conteoTurnos.Brenda} • Wendy: ${conteoTurnos.Wendy} • Mario: ${conteoTurnos.Mario}`;
+
+            // Paginación
+            const limite = parseInt(limiteFilasSelect.value, 10);
+            const totalRegistros = registrosFiltradosActuales.length;
+            const paginacionFooter = document.getElementById('paginacionFooter');
+
+            if (totalRegistros === 0) {
                 cuerpoTabla.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-500">No se encontraron registros para los filtros seleccionados.</td></tr>`;
+                paginacionFooter.classList.add('hidden');
                 sincronizarAnchoBarraSuperior();
                 return;
             }
 
-            registrosFiltradosActuales.forEach((registro) => {
+            let registrosPagina = registrosFiltradosActuales;
+            if (limite > 0) {
+                const totalPaginas = Math.ceil(totalRegistros / limite);
+                if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+                const inicio = (paginaActual - 1) * limite;
+                const fin = Math.min(inicio + limite, totalRegistros);
+                registrosPagina = registrosFiltradosActuales.slice(inicio, fin);
+
+                paginacionFooter.classList.remove('hidden');
+                document.getElementById('infoPaginacion').textContent = `Mostrando ${inicio + 1} - ${fin} de ${totalRegistros} registros`;
+                document.getElementById('indicadorPagina').textContent = `Página ${paginaActual} de ${totalPaginas}`;
+                document.getElementById('btnPrevPage').disabled = paginaActual <= 1;
+                document.getElementById('btnNextPage').disabled = paginaActual >= totalPaginas;
+            } else {
+                paginacionFooter.classList.add('hidden');
+            }
+
+            registrosPagina.forEach((registro) => {
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50/90 transition duration-150 align-top';
 
                 const nombreRecep = mapaNombres[registro.recepcionista] || registro.recepcionista || 'N/A';
+                const iniciales = obtenerIniciales(registro.nombres);
+                const claseDestino = obtenerEstiloDestino(registro.ubicacion);
 
                 tr.innerHTML = `
                     <td class="py-3.5 px-4 whitespace-nowrap">
                         <div class="font-semibold text-slate-800">${escapeHTML(registro.dia)} • ${formatearFechaVisual(registro.fecha)}</div>
                         <div class="text-xs text-slate-400">${escapeHTML(registro.hora)} hrs</div>
                     </td>
-                    <td class="py-3.5 px-4 font-semibold text-slate-800">${escapeHTML(registro.nombres)}</td>
-                    <td class="py-3.5 px-4 min-w-[260px]">
+                    <td class="py-3.5 px-4">
+                        <div class="flex items-center gap-2.5">
+                            <span class="avatar-badge w-7 h-7 rounded-full bg-emerald-100 text-[#00553d] text-[11px] font-bold flex items-center justify-center shrink-0">
+                                ${escapeHTML(iniciales)}
+                            </span>
+                            <span class="font-semibold text-slate-800 leading-snug">${escapeHTML(registro.nombres)}</span>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-4 min-w-[250px]">
                         <p class="text-slate-700 leading-relaxed whitespace-normal break-words">${escapeHTML(registro.consulta)}</p>
                     </td>
                     <td class="py-3.5 px-4 whitespace-nowrap">
-                        <span class="inline-block text-xs font-medium bg-emerald-50 text-[#00553d] border border-emerald-200/70 px-2.5 py-1 rounded-md">${escapeHTML(registro.ubicacion)}</span>
+                        <span class="inline-block text-xs font-medium border px-2.5 py-1 rounded-md ${claseDestino}">${escapeHTML(registro.ubicacion)}</span>
                     </td>
                     <td class="py-3.5 px-4 whitespace-nowrap font-medium text-slate-700">${escapeHTML(nombreRecep)}</td>
-                    <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                    <td class="col-acciones py-3.5 px-4 text-right whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
                             <button type="button" class="btn-edit text-slate-400 hover:text-[#00553d] p-1.5 rounded-lg hover:bg-emerald-50 transition" data-id="${registro.id}" title="Editar registro">
                                 <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -644,12 +804,15 @@
                 });
             });
 
-            // Eventos: Abrir Modal Eliminar
+            // Eventos: Abrir Modal Eliminar con Detalle
             document.querySelectorAll('.btn-delete').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = e.currentTarget.getAttribute('data-id');
-                    if (id) {
+                    const reg = registros.find(r => r.id === id);
+                    if (id && reg) {
                         registroAEliminar = id;
+                        document.getElementById('deleteDetalleTexto').innerHTML =
+                            `¿Estás seguro de eliminar el registro de <strong class="text-slate-800">${escapeHTML(reg.nombres)}</strong> del <strong class="text-slate-800">${formatearFechaVisual(reg.fecha)}</strong>?`;
                         deleteModal.classList.remove('hidden');
                         deleteModal.classList.add('flex');
                     }
@@ -657,7 +820,7 @@
             });
         }
 
-        // --- Guardar Nuevo Registro ---
+        // --- Guardar Nuevo Registro + Enfoque Automático ---
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             btnGuardar.disabled = true;
@@ -682,6 +845,7 @@
                 document.getElementById('consulta').value = '';
                 document.getElementById('ubicacion').value = '';
                 setFechaHoraActual();
+                document.getElementById('nombres').focus();
                 showToast('Visitante registrado correctamente');
             } catch (error) {
                 console.error("Error al guardar: ", error);
@@ -757,6 +921,19 @@
                 btnConfirm.disabled = false;
                 btnConfirm.textContent = 'Sí, Eliminar';
             }
+        });
+
+        // --- Imprimir / Guardar PDF Oficial ---
+        btnImprimir.addEventListener('click', () => {
+            const ahora = new Date();
+            const periodo = soloHoyActivo
+                ? `Hoy (${formatearFechaVisual(getTodayISO())})`
+                : (filtroMes.value ? `Mes ${filtroMes.value}` : 'Histórico Completo');
+            const turnoTexto = filtroRecep.value ? ` • Turno: ${filtroRecep.value}` : '';
+
+            document.getElementById('printFiltroLabel').textContent = `Periodo: ${periodo}${turnoTexto} (${registrosFiltradosActuales.length} registros)`;
+            document.getElementById('printFechaGen').textContent = `Generado: ${ahora.toLocaleDateString('es-GT')} ${ahora.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' })}`;
+            window.print();
         });
 
         // --- Exportar a Excel Real (.xlsx) con SheetJS ---
